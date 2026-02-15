@@ -8,7 +8,7 @@ import SettingsForm from '@/components/SettingsForm';
 import CalendarView from '@/components/CalendarView';
 import ShiftAnimation from '@/components/ShiftAnimation';
 import Footer from '@/components/Footer';
-import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion';
+import { motion, useSpring, useTransform } from 'framer-motion';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Settings, ChevronDown } from 'lucide-react';
 
@@ -152,7 +152,7 @@ export default function Home() {
       >
         <div className="flex-1 min-h-0 h-full"> 
             <CalendarView 
-              startDateStr={settings.calculationMode === 'START_LEAVE' ? '' : settings.startDate} // logic handled inside component usually
+              startDateStr={settings.startDate}
               workDays={settings.workDays}
               leaveDays={settings.leaveDays}
               startShiftOffset={settings.startShiftOffset || 0}

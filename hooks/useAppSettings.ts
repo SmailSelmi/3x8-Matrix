@@ -1,7 +1,4 @@
-// hooks/useAppSettings.ts
-'use client';
-
-import { useState, useEffect, useCallback } from 'react';
+import { useSyncExternalStore, useCallback } from 'react';
 
 const STORAGE_KEY = 'shift_app_settings';
 
@@ -13,33 +10,38 @@ export interface AppSettings {
   startShiftOffset?: number; // 0: Afternoon, 1: Double, 2: Rest
 }
 
-export const useAppSettings = () => {
-  const [settings, setSettings] = useState<AppSettings | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // تحميل الإعدادات عند فتح التطبيق
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved) as AppSettings;
-        // التحقق من صحة البيانات
-        if (parsed.startDate && parsed.workDays > 0 && parsed.leaveDays > 0) {
-          setSettings(parsed);
-        } else {
-          localStorage.removeItem(STORAGE_KEY);
-        }
-      }
-    } catch (e) {
-      console.error("خطأ في قراءة البيانات", e);
-      localStorage.removeItem(STORAGE_KEY);
+// Helper to get from localStorage safely
+const getSnapshot = () => {
+  if (typeof window === 'undefined') return null;
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (!saved) return null;
+  try {
+    const parsed = JSON.parse(saved) as AppSettings;
+    if (parsed.startDate && parsed.workDays > 0 && parsed.leaveDays > 0) {
+      return saved; // Return the string to avoid unnecessary re-renders (parsing happens later)
     }
-    setLoading(false);
-  }, []);
+  } catch {
+    // Ignore error
+  }
+  return null;
+};
 
-  // دالة الحفظ
+const subscribe = (callback: () => void) => {
+  window.addEventListener('storage', callback);
+  window.addEventListener('shift_settings_changed', callback);
+  return () => {
+    window.removeEventListener('storage', callback);
+    window.removeEventListener('shift_settings_changed', callback);
+  };
+};
+
+export const useAppSettings = () => {
+  const settingsRaw = useSyncExternalStore(subscribe, getSnapshot, () => null);
+  
+  const settings: AppSettings | null = settingsRaw ? JSON.parse(settingsRaw) : null;
+  const loading = false; // With useSyncExternalStore, it's immediately synced or null
+
   const saveSettings = useCallback((newSettings: AppSettings) => {
-    // تنظيف وتصحيح البيانات قبل الحفظ
     const cleaned: AppSettings = {
       startDate: newSettings.startDate,
       workDays: Math.max(1, Math.round(newSettings.workDays)),
@@ -48,14 +50,14 @@ export const useAppSettings = () => {
       startShiftOffset: newSettings.startShiftOffset ?? 0,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
-    setSettings(cleaned);
+    window.dispatchEvent(new Event('shift_settings_changed'));
   }, []);
 
-  // دالة المسح (إعادة ضبط المصنع)
   const clearSettings = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
-    setSettings(null);
+    window.dispatchEvent(new Event('shift_settings_changed'));
   }, []);
 
   return { settings, loading, saveSettings, clearSettings };
 };
+

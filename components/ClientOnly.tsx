@@ -11,7 +11,8 @@ export default function ClientOnly({ children, fallback = null }: ClientOnlyProp
   const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
-    setHasMounted(true);
+    const handle = requestAnimationFrame(() => setHasMounted(true));
+    return () => cancelAnimationFrame(handle);
   }, []);
 
   if (!hasMounted) {

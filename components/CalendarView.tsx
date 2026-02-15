@@ -4,14 +4,13 @@ import React, { useState, useMemo } from 'react';
 import { 
   format, 
   startOfMonth, 
-  endOfMonth, 
   eachDayOfInterval, 
   isSameDay, 
   isSameMonth, 
   addMonths, 
-  subMonths,
   getDay,
   addDays,
+  subDays,
   startOfToday,
   differenceInDays,
   startOfDay,
@@ -20,17 +19,18 @@ import {
 } from 'date-fns';
 import { arDZ } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, ChevronLeft, Calendar as CalendarIcon, Info, Hammer, Sun, RefreshCw, Moon, Home } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Sun, RefreshCw, Moon, Home } from 'lucide-react';
 import { ShiftType } from '@/hooks/useShiftLogic';
 
 interface CalendarViewProps {
   startDateStr: string;
   workDays: number;
   leaveDays: number;
+  mode?: 'START_WORK' | 'START_LEAVE';
   startShiftOffset?: number;
 }
 
-export default function CalendarView({ startDateStr, workDays, leaveDays, startShiftOffset = 0 }: CalendarViewProps) {
+export default function CalendarView({ startDateStr, workDays, leaveDays, mode = 'START_WORK', startShiftOffset = 0 }: CalendarViewProps) {
   const [monthIndex, setMonthIndex] = useState(0);
   const [selectedDay, setSelectedDay] = useState<Date | null>(startOfToday());
   const [direction, setDirection] = useState(0);
@@ -39,7 +39,6 @@ export default function CalendarView({ startDateStr, workDays, leaveDays, startS
   
   const calendarDays = useMemo(() => {
     const start = startOfMonth(monthDate);
-    const end = endOfMonth(monthDate);
     const firstDayOfWeek = getDay(start); 
     const paddingDays = (firstDayOfWeek + 1) % 7; 
     const startPadding = paddingDays > 0 ? addDays(start, -paddingDays) : start;
@@ -52,7 +51,12 @@ export default function CalendarView({ startDateStr, workDays, leaveDays, startS
 
   const getDayDetails = (date: Date) => {
     if (!startDateStr) return null;
-    const start = startOfDay(new Date(startDateStr));
+    
+    let start = startOfDay(new Date(startDateStr));
+    if (mode === 'START_LEAVE') {
+      start = subDays(start, workDays);
+    }
+    
     const target = startOfDay(date);
     const diffDays = differenceInDays(target, start);
     

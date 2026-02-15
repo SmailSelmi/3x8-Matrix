@@ -33,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
-      <body className={`${tajawal.variable} font-tajawal antialiased selection:bg-blue-500/30`}>
+      <body suppressHydrationWarning className={`${tajawal.variable} font-tajawal antialiased selection:bg-blue-500/30`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

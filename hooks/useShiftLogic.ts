@@ -1,7 +1,7 @@
 // hooks/useShiftLogic.ts
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { differenceInDays, addDays, subDays, startOfDay, differenceInMilliseconds } from 'date-fns';
 
 // أنواع الدوام الممكنة
@@ -33,13 +33,12 @@ export const useShiftLogic = (
   mode: 'START_WORK' | 'START_LEAVE' = 'START_WORK',
   startShiftOffset: number = 0
 ) => {
-  const [shiftState, setShiftState] = useState<ShiftState | null>(null);
+  const [now, setNow] = useState(new Date());
 
-  const calculateShift = useCallback(() => {
+  const calculateShift = useCallback((currentTime: Date): ShiftState | null => {
     if (!inputDateStr) return null;
 
-    const now = new Date();
-    const today = startOfDay(now);
+    const today = startOfDay(currentTime);
     let startOfWorkCycle: Date;
 
     // توحيد نقطة البداية
@@ -104,9 +103,9 @@ export const useShiftLogic = (
     }
 
     // حساب العد التنازلي لمنتصف الليل
-    const midnight = new Date(now);
+    const midnight = new Date(currentTime);
     midnight.setHours(24, 0, 0, 0);
-    const msToMidnight = differenceInMilliseconds(midnight, now);
+    const msToMidnight = differenceInMilliseconds(midnight, currentTime);
     const totalSecondsToMidnight = Math.floor(msToMidnight / 1000);
     const hoursToMidnight = Math.floor(totalSecondsToMidnight / 3600);
     const minutesToMidnight = Math.floor((totalSecondsToMidnight % 3600) / 60);
@@ -130,31 +129,24 @@ export const useShiftLogic = (
   }, [inputDateStr, workDays, leaveDays, mode, startShiftOffset]);
 
   useEffect(() => {
-    if (!inputDateStr) return;
-
-    // Initial calculation
-    const result = calculateShift();
-    if (result) setShiftState(result);
-
-    // Update every second for countdown timer
     const timer = setInterval(() => {
-      const result = calculateShift();
-      if (result) setShiftState(result);
+      setNow(new Date());
     }, 1000);
 
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
-        const result = calculateShift();
-        if (result) setShiftState(result);
+        setNow(new Date());
       }
     };
+    
     document.addEventListener('visibilitychange', handleVisibility);
 
     return () => {
       clearInterval(timer);
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [inputDateStr, calculateShift]);
+  }, []);
 
-  return shiftState;
+  return calculateShift(now);
 };
+
