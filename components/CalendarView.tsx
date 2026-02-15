@@ -188,7 +188,7 @@ export default function CalendarView({ startDateStr, workDays, leaveDays, mode =
               }}
               className="w-full h-full"
             >
-              <div className="grid grid-cols-7 gap-1 lg:gap-3 h-full content-start">
+              <div className="grid grid-cols-7 gap-2 lg:gap-4 content-start">
                 {calendarDays.map((day) => {
                   const details = getDayDetails(day);
                   const isToday = isSameDay(day, new Date());
@@ -196,6 +196,13 @@ export default function CalendarView({ startDateStr, workDays, leaveDays, mode =
                   const isInMonth = isSameMonth(day, monthDate);
                   
                   if (!details) return <div key={day.toISOString()} />;
+
+                  // Extract color theme for dynamic opacity/shadows
+                  let themeColor = details.color;
+                  if (themeColor === 'bg-orange-500') themeColor = 'orange-500';
+                  if (themeColor === 'bg-red-600') themeColor = 'red-600';
+                  if (themeColor === 'bg-blue-500') themeColor = 'blue-500';
+                  if (themeColor === 'bg-green-500') themeColor = 'green-500';
 
                   return (
                     <motion.button
@@ -209,13 +216,13 @@ export default function CalendarView({ startDateStr, workDays, leaveDays, mode =
                         }
                       }}
                       className={`
-                        relative flex flex-col items-center justify-center rounded-xl md:rounded-2xl transition-all duration-300 overflow-hidden
+                        relative flex flex-col items-center justify-center rounded-xl md:rounded-2xl transition-all duration-300
                         ${!isInMonth ? 'opacity-20 grayscale' : 'opacity-100'}
                         ${isSelected 
-                          ? `${details.color} text-white shadow-lg shadow-${details.color}/40 z-10 ring-2 ring-white/20` 
-                          : `${details.color.replace('bg-', 'bg-').replace('500', '500/10').replace('600', '600/10')} ${details.color.replace('bg-', 'text-')} hover:bg-opacity-20`
+                          ? `${details.color} text-white shadow-xl shadow-${themeColor}/30 z-20 scale-105 ring-2 ring-white/50` 
+                          : `bg-${themeColor}/5 text-${themeColor} hover:bg-${themeColor}/15`
                         }
-                        aspect-[4/5] lg:aspect-[1/1]
+                        aspect-square w-full
                       `}
                     >
                       <span className={`text-xs md:text-sm font-black tabular-nums z-10 ${isToday && !isSelected ? 'text-blue-500' : ''}`}>

@@ -14,8 +14,8 @@ const ShiftAnimation: React.FC<Props> = ({ type }) => {
   const [loaded, setLoaded] = React.useState(false);
   const isSleepingMode = type === 'REST' || type === 'LEAVE';
 
-  const workingUrl = "https://assets9.lottiefiles.com/packages/lf20_6yoyv9sc.json";
-  const sleepingUrl = "https://assets10.lottiefiles.com/packages/lf20_rIQI19wJ8o.json";
+  const workingUrl = "/animations/working.json";
+  const sleepingUrl = "/animations/sleeping.json";
 
   return (
     <div className="relative w-full h-full min-h-[200px] flex items-center justify-center">
