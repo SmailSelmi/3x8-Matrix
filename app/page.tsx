@@ -8,9 +8,9 @@ import SettingsForm from '@/components/SettingsForm';
 import CalendarView from '@/components/CalendarView';
 import ShiftAnimation from '@/components/ShiftAnimation';
 import Footer from '@/components/Footer';
-import { motion, useSpring, useTransform } from 'framer-motion';
+import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { Settings, ChevronDown } from 'lucide-react';
+import { Settings, Share2, Check } from 'lucide-react';
 
 
 function AnimatedNumber({ value }: { value: number }) {
@@ -25,6 +25,7 @@ function AnimatedNumber({ value }: { value: number }) {
 export default function Home() {
   const { settings, loading, saveSettings } = useAppSettings();
   const [isEditing, setIsEditing] = useState(false);
+  const [showShareToast, setShowShareToast] = useState(false);
 
   // منطق الحساب
   const shift = useShiftLogic(
@@ -36,15 +37,15 @@ export default function Home() {
   );
 
   if (loading) return (
-    <div className="h-screen bg-slate-950 flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-slate-800 border-t-blue-500 rounded-full animate-spin" />
+    <div className="h-screen bg-background flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-slate-200 dark:border-slate-800 border-t-blue-500 rounded-full animate-spin" />
     </div>
   );
 
   // شاشة الإعدادات
   if (!settings || isEditing) {
     return (
-      <main className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4">
+      <main className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
         <SettingsForm 
           onSave={(data) => {
             saveSettings(data);
@@ -64,31 +65,67 @@ export default function Home() {
   const isRest = shift.type === 'REST' || shift.type === 'LEAVE';
 
   return (
-    <main className="h-screen w-full bg-slate-950 text-white grid grid-cols-1 lg:grid-cols-12 font-tajawal relative overflow-x-hidden overflow-y-auto snap-y snap-mandatory lg:overflow-hidden lg:snap-none scroll-smooth">
+    <main className="h-screen w-full bg-background text-foreground grid grid-cols-1 lg:grid-cols-12 font-tajawal relative overflow-x-hidden overflow-y-auto snap-y snap-mandatory lg:overflow-hidden lg:snap-none scroll-smooth">
       
       {/* القسم الأيسر: الحالة والأنيميشن */}
       <motion.section 
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="lg:col-span-4 min-h-[100dvh] lg:h-full snap-start flex flex-col justify-center items-center border-b lg:border-r lg:border-b-0 border-white/5 bg-white/[0.02] backdrop-blur-3xl p-6 relative z-10"
+        className="lg:col-span-4 min-h-[100dvh] lg:h-screen lg:max-h-screen snap-start flex flex-col justify-center items-center border-b lg:border-r lg:border-b-0 border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.02] backdrop-blur-3xl p-6 relative z-10 overflow-hidden"
       >
-        {/* Background Glow */}
-        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-gradient-to-br ${isRest ? 'from-blue-500/10' : 'from-orange-500/10'} to-transparent rounded-full blur-[100px] pointer-events-none`} />
+        {/* Background Glows (Lifestyle-aligned) */}
+        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-radial ${isRest ? 'from-blue-600/20' : 'from-orange-600/20'} to-transparent blur-[120px] pointer-events-none opacity-50 z-0`} />
+        <div className={`absolute -bottom-24 -left-24 w-96 h-96 bg-radial ${isRest ? 'from-blue-400/10' : 'from-orange-400/10'} to-transparent blur-[100px] pointer-events-none z-0`} />
 
         {/* زر الإعدادات */}
         <motion.button 
           whileHover={{ scale: 1.1, rotate: 90 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => setIsEditing(true)}
-          className="absolute top-6 left-6 p-3 bg-white/5 rounded-2xl border border-white/10 text-slate-400 hover:text-white hover:bg-white/10 transition z-50 shadow-lg backdrop-blur-md"
+          className="absolute top-6 left-6 p-3 bg-slate-100 dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition z-50 shadow-lg backdrop-blur-md"
         >
           <Settings size={20} />
         </motion.button>
 
-         {/* زر الثيم */}
-         <div className="absolute top-6 right-6 z-50">
-           <ThemeToggle />
+         {/* زر الثيم والمشاركة */}
+         <div className="absolute top-6 right-6 z-50 flex items-center gap-2">
+            <motion.button 
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={async () => {
+                const shareData = {
+                  title: 'جدول مناوباتي',
+                  text: `مناوبتي اليوم هي: ${shift.label}`,
+                  url: window.location.href,
+                };
+                if (navigator.share) {
+                  try {
+                    await navigator.share(shareData);
+                  } catch (err) {
+                    console.error(err);
+                  }
+                } else {
+                  navigator.clipboard.writeText(window.location.href);
+                  setShowShareToast(true);
+                  setTimeout(() => setShowShareToast(false), 2000);
+                }
+              }}
+              className="p-3 bg-slate-100 dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 transition shadow-lg backdrop-blur-md"
+            >
+              <AnimatePresence mode="wait">
+                 {showShareToast ? (
+                   <motion.div key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+                     <Check size={20} className="text-green-500" />
+                   </motion.div>
+                 ) : (
+                   <motion.div key="share" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+                     <Share2 size={20} />
+                   </motion.div>
+                 )}
+              </AnimatePresence>
+            </motion.button>
+            <ThemeToggle />
          </div>
 
         {/* الأنيميشن */}
@@ -127,20 +164,8 @@ export default function Home() {
             </motion.p>
         </div>
 
-        {/* الفوتر */}
-        <div className="mt-auto pt-8 w-full flex justify-center pb-4 relative z-10">
-            <Footer className="!static !transform-none !translate-x-0 !mb-8 lg:!mb-0" />
-            
-            {/* Scroll Indicator for Mobile */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1, y: [0, 10, 0] }}
-              transition={{ delay: 1, duration: 2, repeat: Infinity }}
-              className="absolute bottom-2 left-1/2 -translate-x-1/2 text-slate-500 lg:hidden"
-            >
-              <ChevronDown size={24} />
-            </motion.div> 
-        </div>
+        {/* Mobile-only Footer Spacer (optional, removed fixed footer here) */}
+        <div className="lg:hidden h-2" />
       </motion.section>
 
       {/* القسم الأيمن: التقويم */}
@@ -148,17 +173,23 @@ export default function Home() {
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="lg:col-span-8 min-h-[100dvh] lg:h-full snap-start flex flex-col p-4 md:p-6 relative bg-slate-950/50"
+        className="lg:col-span-8 min-h-[100dvh] lg:h-screen lg:max-h-screen snap-start flex flex-col p-2 md:p-3 lg:p-4 relative bg-slate-100/30 dark:bg-slate-950/50 overflow-hidden"
       >
         <div className="flex-1 min-h-0 h-full"> 
             <CalendarView 
               startDateStr={settings.startDate}
               workDays={settings.workDays}
               leaveDays={settings.leaveDays}
+              mode={settings.calculationMode}
               startShiftOffset={settings.startShiftOffset || 0}
             />
         </div>
       </motion.section>
+      
+      {/* Footer: Positioned relatively for mobile scroll, sidebar for desktop */}
+      <div className="lg:absolute lg:bottom-6 lg:left-6 lg:z-50 lg:w-[calc(33.333%-3rem)] flex justify-center p-6 lg:p-0">
+        <Footer className="glass-card w-full max-w-sm lg:max-w-none" />
+      </div>
 
     </main>
   );

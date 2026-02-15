@@ -75,7 +75,7 @@ export default function DatePickerAr({ selectedDate, onChange }: Props) {
         className={`w-full glass-card text-foreground border rounded-2xl p-4 text-right transition-all flex items-center justify-between gap-3 shadow-sm ${
           open
             ? 'border-blue-500 ring-4 ring-blue-500/10'
-            : 'border-white/10'
+            : 'border-slate-200 dark:border-white/10'
         }`}
       >
         <CalendarIcon size={20} className="text-blue-500" />
@@ -89,17 +89,15 @@ export default function DatePickerAr({ selectedDate, onChange }: Props) {
       <AnimatePresence>
         {open && (
           <motion.div 
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute top-full mt-3 left-0 right-0 z-[110] bg-card/90 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden"
+            className="absolute top-full mt-3 left-0 right-0 z-[110] bg-card/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200 dark:border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden"
           >
             {/* Month Navigation */}
             <div className="flex items-center justify-between px-6 py-5 bg-white/5 border-b border-white/5">
               <button
                 type="button"
                 onClick={() => { setViewDate(subMonths(viewDate, 1)); triggerHaptic(5); }}
-                className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/10 text-slate-400 transition-all active:scale-80"
+                className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 transition-all active:scale-80"
               >
                 <ChevronRight size={22} />
               </button>
@@ -113,7 +111,7 @@ export default function DatePickerAr({ selectedDate, onChange }: Props) {
               <button
                 type="button"
                 onClick={() => { setViewDate(addMonths(viewDate, 1)); triggerHaptic(5); }}
-                className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/10 text-slate-400 transition-all active:scale-80"
+                className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 transition-all active:scale-80"
               >
                 <ChevronLeft size={22} />
               </button>
@@ -151,7 +149,7 @@ export default function DatePickerAr({ selectedDate, onChange }: Props) {
                           ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40 scale-110 z-10 ring-2 ring-blue-400/20'
                           : isToday
                             ? 'bg-blue-500/10 text-blue-500 ring-1 ring-blue-500/20'
-                            : 'text-foreground hover:bg-white/10'
+                            : 'text-foreground hover:bg-slate-100 dark:hover:bg-white/10'
                       }
                     `}
                   >

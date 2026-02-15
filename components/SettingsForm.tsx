@@ -5,6 +5,7 @@ import { AppSettings } from '@/hooks/useAppSettings';
 import { Sun, RefreshCw, Moon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DatePickerAr from './DatePickerAr';
+import { ThemeToggle } from './ThemeToggle';
 
 interface Props {
   onSave: (settings: AppSettings) => void;
@@ -15,8 +16,8 @@ type Mode = 'START_WORK' | 'START_LEAVE';
 
 const SHIFT_OPTIONS = [
   { id: 0, label: 'مساء (13-20)', icon: Sun, colorClass: 'text-orange-500', bgClass: 'bg-orange-500/10', borderClass: 'border-orange-500', shadowClass: 'shadow-orange-500/20', description: 'بداية الوردية بالدوام المسائي' },
-  { id: 1, label: 'صباح + ليل', icon: RefreshCw, colorClass: 'text-red-500', bgClass: 'bg-red-600/10', borderClass: 'border-red-600', shadowClass: 'shadow-red-600/20', description: 'بداية الوردية بالدوام الكامل' },
-  { id: 2, label: 'راحة', icon: Moon, colorClass: 'text-blue-500', bgClass: 'bg-blue-500/10', borderClass: 'border-blue-500', shadowClass: 'shadow-blue-500/20', description: 'بداية الوردية بيوم الراحة' },
+  { id: 1, label: 'صباح + ليل', icon: Moon, colorClass: 'text-red-500', bgClass: 'bg-red-600/10', borderClass: 'border-red-600', shadowClass: 'shadow-red-600/20', description: 'بداية الوردية بالدوام الكامل' },
+  { id: 2, label: 'راحة', icon: RefreshCw, colorClass: 'text-blue-500', bgClass: 'bg-blue-500/10', borderClass: 'border-blue-500', shadowClass: 'shadow-blue-500/20', description: 'بداية الوردية بيوم الراحة' },
 ];
 
 export default function SettingsForm({ onSave, initialData }: Props) {
@@ -24,7 +25,13 @@ export default function SettingsForm({ onSave, initialData }: Props) {
   
   const [formData, setFormData] = useState<AppSettings>(
     initialData || {
-      startDate: new Date().toISOString().split('T')[0],
+      startDate: (() => {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+      })(),
       workDays: 28,
       leaveDays: 28,
       calculationMode: 'START_WORK',
@@ -46,12 +53,16 @@ export default function SettingsForm({ onSave, initialData }: Props) {
   const selectedShift = SHIFT_OPTIONS.find(s => s.id === (formData.startShiftOffset || 0));
 
   return (
-    <div className="w-full max-w-md bg-slate-900/80 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-500 mx-auto">
+    <div className="w-full max-w-md bg-card dark:bg-slate-900/80 backdrop-blur-3xl border border-slate-200 dark:border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-500 mx-auto">
       
       {/* Header with Title and Mode Selection */}
       <div className="p-6 pb-2 space-y-4">
-        <h2 className="text-xl font-black text-center text-white mb-2">إعدادات المناوبة 🛠️</h2>
-        <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-950/60 rounded-3xl border border-white/5">
+        <div className="flex justify-between items-center mb-2">
+          <div className="w-10 h-10" /> {/* Spacer for symmetry */}
+          <h2 className="text-xl font-black text-foreground dark:text-white">إعدادات المناوبة 🛠️</h2>
+          <ThemeToggle />
+        </div>
+        <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 dark:bg-slate-950/60 rounded-3xl border border-slate-200 dark:border-white/5">
           {(['START_WORK', 'START_LEAVE'] as const).map((m) => (
                <button
                   key={m}
@@ -82,7 +93,12 @@ export default function SettingsForm({ onSave, initialData }: Props) {
             </label>
             <DatePickerAr 
               selectedDate={new Date(formData.startDate)} 
-              onChange={(date) => setFormData({...formData, startDate: date.toISOString().split('T')[0]})}
+              onChange={(date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                setFormData({...formData, startDate: `${year}-${month}-${day}`});
+              }}
             />
           </div>
 
@@ -109,8 +125,8 @@ export default function SettingsForm({ onSave, initialData }: Props) {
                             onClick={() => setFormData({...formData, startShiftOffset: option.id})}
                             className={`relative p-4 rounded-2xl flex flex-col items-center justify-center gap-2 border-2 transition-all overflow-hidden ${
                                 isSelected
-                                ? `${option.borderClass} ${option.bgClass} shadow-[0_0_20px_rgba(0,0,0,0.2)]`
-                                : 'border-white/5 bg-slate-950/30 hover:bg-slate-950/50'
+                                ? `${option.borderClass} ${option.bgClass} shadow-[0_0_20px_rgba(0,0,0,0.1)] dark:shadow-[0_0_20px_rgba(0,0,0,0.2)]`
+                                : 'border-slate-200/50 dark:border-white/5 bg-slate-50 dark:bg-slate-950/30 hover:bg-slate-100 dark:hover:bg-slate-950/50'
                             }`}
                           >
                           {isSelected && (
@@ -138,7 +154,7 @@ export default function SettingsForm({ onSave, initialData }: Props) {
                         key={formData.startShiftOffset}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="flex items-center gap-2 px-4 py-2 bg-slate-950/30 rounded-full border border-white/5"
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-950/30 rounded-full border border-slate-200 dark:border-white/5"
                     >
                         <div className={`w-2 h-2 rounded-full ${selectedShift?.colorClass.replace('text-', 'bg-')} animate-pulse`} />
                         <p className="text-[10px] font-bold text-slate-400">
@@ -163,7 +179,7 @@ export default function SettingsForm({ onSave, initialData }: Props) {
                   required
                   value={formData.workDays}
                   onChange={(e) => setFormData({...formData, workDays: Number(e.target.value)})}
-                  className="w-full bg-slate-950/50 text-white border-2 border-white/5 rounded-2xl p-4 text-center text-xl font-black focus:border-blue-500 outline-none transition-all"
+                  className="w-full bg-slate-100 dark:bg-slate-950/50 text-foreground dark:text-white border-2 border-slate-200 dark:border-white/5 rounded-2xl p-4 text-center text-xl font-black focus:border-blue-500 outline-none transition-all"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-500 uppercase">يوم</span>
               </div>
@@ -181,7 +197,7 @@ export default function SettingsForm({ onSave, initialData }: Props) {
                   required
                   value={formData.leaveDays}
                   onChange={(e) => setFormData({...formData, leaveDays: Number(e.target.value)})}
-                  className="w-full bg-slate-950/50 text-white border-2 border-white/5 rounded-2xl p-4 text-center text-xl font-black focus:border-green-500 outline-none transition-all"
+                  className="w-full bg-slate-100 dark:bg-slate-950/50 text-foreground dark:text-white border-2 border-slate-200 dark:border-white/5 rounded-2xl p-4 text-center text-xl font-black focus:border-green-500 outline-none transition-all"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-500 uppercase">يوم</span>
               </div>
@@ -189,9 +205,9 @@ export default function SettingsForm({ onSave, initialData }: Props) {
           </div>
 
           {/* Info Summary */}
-          <div className="p-4 bg-slate-950/40 rounded-2x border border-white/5 space-y-1 backdrop-blur-md">
-            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest text-center">نظام الدورة الحالية</p>
-            <p className="text-xs text-blue-300 font-bold text-center leading-relaxed">{summary}</p>
+          <div className="p-4 bg-slate-100 dark:bg-slate-950/40 rounded-2x border border-slate-200 dark:border-white/5 space-y-1 backdrop-blur-md">
+            <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">نظام الدورة الحالية</p>
+            <p className="text-xs text-blue-600 dark:text-blue-300 font-bold text-center leading-relaxed">{summary}</p>
           </div>
 
           <div className="space-y-3 pt-2">

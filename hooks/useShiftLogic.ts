@@ -26,6 +26,12 @@ export interface ShiftState {
   secondsToMidnight: number;
 }
 
+// Helper to parse "YYYY-MM-DD" safely as local date
+const parseLocalDate = (dateStr: string): Date => {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day, 0, 0, 0, 0);
+};
+
 export const useShiftLogic = (
   inputDateStr: string,
   workDays: number = 28,
@@ -41,13 +47,13 @@ export const useShiftLogic = (
     const today = startOfDay(currentTime);
     let startOfWorkCycle: Date;
 
-    // توحيد نقطة البداية
+    // توحيد نقطة البداية باستخدام التحليل المحلي
     if (mode === 'START_LEAVE') {
-      const leaveStart = startOfDay(new Date(inputDateStr));
+      const leaveStart = parseLocalDate(inputDateStr);
       if (isNaN(leaveStart.getTime())) return null;
       startOfWorkCycle = subDays(leaveStart, workDays);
     } else {
-      startOfWorkCycle = startOfDay(new Date(inputDateStr));
+      startOfWorkCycle = parseLocalDate(inputDateStr);
       if (isNaN(startOfWorkCycle.getTime())) return null;
     }
     
@@ -78,11 +84,11 @@ export const useShiftLogic = (
         color = 'bg-orange-500';
       } else if (microCycleDay === 1) {
         type = 'DOUBLE';
-        label = 'صباح + ليل 🔄';
+        label = 'صباح + ليل';
         color = 'bg-red-600';
       } else {
         type = 'REST';
-        label = 'راحة قصيرة 🛌';
+        label = 'راحة قصيرة';
         color = 'bg-blue-500';
       }
 

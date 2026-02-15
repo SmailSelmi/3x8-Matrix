@@ -30,6 +30,11 @@ interface CalendarViewProps {
   startShiftOffset?: number;
 }
 
+const parseLocalDate = (dateStr: string): Date => {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day, 0, 0, 0, 0);
+};
+
 export default function CalendarView({ startDateStr, workDays, leaveDays, mode = 'START_WORK', startShiftOffset = 0 }: CalendarViewProps) {
   const [monthIndex, setMonthIndex] = useState(0);
   const [selectedDay, setSelectedDay] = useState<Date | null>(startOfToday());
@@ -49,16 +54,20 @@ export default function CalendarView({ startDateStr, workDays, leaveDays, mode =
     });
   }, [monthDate]);
 
-  const getDayDetails = (date: Date) => {
+  const cycleStart = useMemo(() => {
     if (!startDateStr) return null;
-    
-    let start = startOfDay(new Date(startDateStr));
+    let start = parseLocalDate(startDateStr);
     if (mode === 'START_LEAVE') {
       start = subDays(start, workDays);
     }
+    return start;
+  }, [startDateStr, mode, workDays]);
+
+  const getDayDetails = (date: Date) => {
+    if (!cycleStart) return null;
     
     const target = startOfDay(date);
-    const diffDays = differenceInDays(target, start);
+    const diffDays = differenceInDays(target, cycleStart);
     
     const cycleLength = workDays + leaveDays;
     let dayInCycle = diffDays % cycleLength;
@@ -67,8 +76,8 @@ export default function CalendarView({ startDateStr, workDays, leaveDays, mode =
     if (dayInCycle < workDays) {
       const microCycleDay = (dayInCycle + startShiftOffset) % 3;
       if (microCycleDay === 0) return { type: 'AFTERNOON' as ShiftType, label: 'مساء', color: 'bg-orange-500', icon: Sun };
-      if (microCycleDay === 1) return { type: 'DOUBLE' as ShiftType, label: 'كبير', color: 'bg-red-600', icon: RefreshCw };
-      return { type: 'REST' as ShiftType, label: 'راحة', color: 'bg-blue-500', icon: Moon };
+      if (microCycleDay === 1) return { type: 'DOUBLE' as ShiftType, label: 'كبير', color: 'bg-red-600', icon: Moon };
+      return { type: 'REST' as ShiftType, label: 'راحة', color: 'bg-blue-500', icon: RefreshCw };
     } else {
       return { type: 'LEAVE' as ShiftType, label: 'إجازة', color: 'bg-green-500', icon: Home };
     }
@@ -118,16 +127,16 @@ export default function CalendarView({ startDateStr, workDays, leaveDays, mode =
     <div className="w-full h-full flex flex-col">
       <motion.div 
         layout
-        className="glass-card rounded-[1.5rem] lg:rounded-[2.5rem] shadow-2xl overflow-hidden group/calendar relative bg-white/60 dark:bg-slate-900/60 border border-white/20 dark:border-white/10 flex flex-col h-full backdrop-blur-3xl"
+        className="glass-card rounded-[1.5rem] lg:rounded-[2.5rem] shadow-2xl overflow-hidden group/calendar relative bg-card/60 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 flex flex-col h-full backdrop-blur-3xl"
       >
         {/* Header */}
-        <div className="relative z-20 px-6 py-4 bg-white/30 dark:bg-slate-800/30 border-b border-white/10 shrink-0">
+        <div className="relative z-20 px-6 py-4 bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-200 dark:border-white/10 shrink-0">
           <div className="flex justify-between items-center">
             <motion.button 
               whileTap={{ scale: 0.9 }}
-              whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.1)" }}
+              whileHover={{ scale: 1.1, backgroundColor: "rgba(0,0,0,0.05)" }}
               onClick={() => paginate(-1)}
-              className="p-2 rounded-xl transition-colors text-slate-600 dark:text-slate-300 hover:text-foreground"
+              className="p-2 rounded-xl transition-colors text-slate-500 dark:text-slate-400 hover:text-foreground"
             >
               <ChevronRight size={20} />
             </motion.button>
@@ -153,9 +162,9 @@ export default function CalendarView({ startDateStr, workDays, leaveDays, mode =
 
             <motion.button 
               whileTap={{ scale: 0.9 }}
-              whileHover={{ scale: 1.1, backgroundColor: "rgba(255,255,255,0.1)" }}
+              whileHover={{ scale: 1.1, backgroundColor: "rgba(0,0,0,0.05)" }}
               onClick={() => paginate(1)}
-              className="p-2 rounded-xl transition-colors text-slate-600 dark:text-slate-300 hover:text-foreground"
+              className="p-2 rounded-xl transition-colors text-slate-500 dark:text-slate-400 hover:text-foreground"
             >
               <ChevronLeft size={20} />
             </motion.button>
@@ -163,16 +172,16 @@ export default function CalendarView({ startDateStr, workDays, leaveDays, mode =
         </div>
 
         {/* Days Header */}
-        <div className="grid grid-cols-7 border-b border-border/50 bg-slate-100/30 dark:bg-slate-900/30 shrink-0">
+        <div className="grid grid-cols-7 border-b border-slate-200 dark:border-border/50 bg-slate-50/50 dark:bg-slate-900/30 shrink-0">
           {weekDays.map((day) => (
-            <div key={day.name} className="text-center text-[11px] font-black text-slate-500 dark:text-slate-400 py-3 uppercase tracking-wider">
+            <div key={day.name} className="text-center text-[11px] font-black text-slate-400 dark:text-slate-500 py-3 uppercase tracking-wider">
               {day.name}
             </div>
           ))}
         </div>
         
         {/* Grid Container */}
-        <div className="relative flex-1 overflow-hidden p-1 sm:p-2 lg:p-6">
+        <div className="relative flex-1 overflow-hidden p-1 sm:p-2 lg:p-4">
           <AnimatePresence initial={false} custom={direction} mode="popLayout">
             <motion.div
               key={monthIndex}
@@ -188,7 +197,7 @@ export default function CalendarView({ startDateStr, workDays, leaveDays, mode =
               }}
               className="w-full h-full"
             >
-              <div className="grid grid-cols-7 gap-2 lg:gap-4 content-start">
+              <div className="grid grid-cols-7 grid-rows-6 gap-1 md:gap-1.5 lg:gap-2 h-full">
                 {calendarDays.map((day) => {
                   const details = getDayDetails(day);
                   const isToday = isSameDay(day, new Date());
@@ -208,6 +217,7 @@ export default function CalendarView({ startDateStr, workDays, leaveDays, mode =
                     <motion.button
                       key={day.toISOString()}
                       whileTap={{ scale: 0.95 }}
+                      whileHover={{ scale: 1.05, y: -2, zIndex: 30 }}
                       layoutId={isSelected ? 'selected-day' : undefined}
                       onClick={() => {
                         setSelectedDay(day);
@@ -219,10 +229,10 @@ export default function CalendarView({ startDateStr, workDays, leaveDays, mode =
                         relative flex flex-col items-center justify-center rounded-xl md:rounded-2xl transition-all duration-300
                         ${!isInMonth ? 'opacity-20 grayscale' : 'opacity-100'}
                         ${isSelected 
-                          ? `${details.color} text-white shadow-xl shadow-${themeColor}/30 z-20 scale-105 ring-2 ring-white/50` 
-                          : `bg-${themeColor}/5 text-${themeColor} hover:bg-${themeColor}/15`
+                          ? `${details.color} text-white shadow-xl shadow-${themeColor}/30 scale-105 ring-2 ring-white/50 z-20` 
+                          : `bg-${themeColor}/5 text-${themeColor} hover:bg-${themeColor}/15 shadow-sm hover:shadow-md`
                         }
-                        aspect-square w-full
+                        h-full w-full py-1 lg:py-2
                       `}
                     >
                       <span className={`text-xs md:text-sm font-black tabular-nums z-10 ${isToday && !isSelected ? 'text-blue-500' : ''}`}>
