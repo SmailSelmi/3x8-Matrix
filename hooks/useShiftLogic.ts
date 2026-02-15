@@ -24,6 +24,7 @@ export interface ShiftState {
   hoursToMidnight: number;
   minutesToMidnight: number;
   secondsToMidnight: number;
+  daysPassed: number;
 }
 
 // Helper to parse "YYYY-MM-DD" safely as local date
@@ -37,17 +38,23 @@ export const useShiftLogic = (
   workDays: number = 28,
   leaveDays: number = 28,
   mode: 'START_WORK' | 'START_LEAVE' = 'START_WORK',
-  startShiftOffset: number = 0
+  startShiftOffset: number = 0,
+  targetDate?: Date | null
 ) => {
   const [now, setNow] = useState(new Date());
 
-  const calculateShift = useCallback((currentTime: Date): ShiftState | null => {
+    const calculateShift = useCallback((currentTime: Date): ShiftState | null => {
+    // If a specific target date is requested, use it for shift calculation
+    // but keep 'now' for countdowns if needed (though countdowns make less sense for future dates)
+    const effectiveDate = targetDate || currentTime;
+    
     if (!inputDateStr) return null;
 
-    const today = startOfDay(currentTime);
+    const today = startOfDay(effectiveDate);
     let startOfWorkCycle: Date;
 
-    // توحيد نقطة البداية باستخدام التحليل المحلي
+    // Anchor Date Logic: We anchor everything to the User's Selected Date
+    // If Mode is START_LEAVE, we calculate back to find the theoretic Start of Work
     if (mode === 'START_LEAVE') {
       const leaveStart = parseLocalDate(inputDateStr);
       if (isNaN(leaveStart.getTime())) return null;
@@ -57,15 +64,18 @@ export const useShiftLogic = (
       if (isNaN(startOfWorkCycle.getTime())) return null;
     }
     
+    // 1. Calculate Absolute Days Passed
+    // This allows negative values (past) and positive values (future) to work on the same number line
+    const daysPassed = differenceInDays(today, startOfWorkCycle);
     const cycleLength = workDays + leaveDays;
-    const totalDaysPassed = differenceInDays(today, startOfWorkCycle);
     
-    // تصحيح الأيام السالبة
-    let dayInCycle = totalDaysPassed % cycleLength;
-    if (dayInCycle < 0) dayInCycle = cycleLength + dayInCycle;
+    // 2. Normalize to a Positive Cycle Index (0 to cycleLength - 1)
+    // The Formula: ((n % m) + m) % m handles negative numbers correctly in JS
+    const dayInCycle = ((daysPassed % cycleLength) + cycleLength) % cycleLength;
 
-    // حساب رقم الدورة
-    const cycleNumber = Math.max(Math.floor(totalDaysPassed / cycleLength) + 1, 1);
+    // 3. Current Cycle Number (1-based count of full cycles passed)
+    // We use floor to count full cycles completed
+    const cycleNumber = Math.floor(daysPassed / cycleLength) + 1;
 
     let type: ShiftType;
     let label: string;
@@ -75,20 +85,23 @@ export const useShiftLogic = (
     let daysCompleted: number;
 
     if (dayInCycle < workDays) {
-      // --- نحن داخل فترة العمل (الـ 28 يوم) ---
-      const microCycleDay = (dayInCycle + startShiftOffset) % 3;
+      // --- WORK PHASE ---
       
-      if (microCycleDay === 0) {
+      // Absolute Math for Shift Pattern: (DayIndex + UserOffset) % 3
+      // We use dayInCycle (0 to 27) because the pattern restarts every cycle
+      const shiftPatternIndex = (dayInCycle + startShiftOffset) % 3;
+      
+      if (shiftPatternIndex === 0) {
         type = 'AFTERNOON';
         label = 'مساء (13-20) ⛅';
         color = 'bg-orange-500';
-      } else if (microCycleDay === 1) {
+      } else if (shiftPatternIndex === 1) {
         type = 'DOUBLE';
         label = 'صباح + ليل';
-        color = 'bg-red-600';
+        color = 'bg-red-500';
       } else {
         type = 'REST';
-        label = 'راحة قصيرة';
+        label = 'يوم عطلة';
         color = 'bg-blue-500';
       }
 
@@ -97,7 +110,7 @@ export const useShiftLogic = (
       daysCompleted = dayInCycle + 1;
       
     } else {
-      // --- فترة الإجازة الطويلة ---
+      // --- LEAVE PHASE ---
       type = 'LEAVE';
       label = 'إجازة شهرية 🏠';
       color = 'bg-green-500';
@@ -108,7 +121,7 @@ export const useShiftLogic = (
       daysCompleted = daysInLeave + 1;
     }
 
-    // حساب العد التنازلي لمنتصف الليل
+    // Countdown Logic (Unchanged)
     const midnight = new Date(currentTime);
     midnight.setHours(24, 0, 0, 0);
     const msToMidnight = differenceInMilliseconds(midnight, currentTime);
@@ -131,10 +144,14 @@ export const useShiftLogic = (
       hoursToMidnight,
       minutesToMidnight,
       secondsToMidnight,
+      daysPassed, // Expose raw days passed for stats
     };
   }, [inputDateStr, workDays, leaveDays, mode, startShiftOffset]);
 
   useEffect(() => {
+    // Only run the live timer if we are viewing "Now" (no targetDate provided)
+    if (targetDate) return;
+
     const timer = setInterval(() => {
       setNow(new Date());
     }, 1000);
@@ -151,7 +168,7 @@ export const useShiftLogic = (
       clearInterval(timer);
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, []);
+  }, [targetDate]);
 
   return calculateShift(now);
 };

@@ -79,7 +79,7 @@ export default function DatePickerAr({ selectedDate, onChange }: Props) {
         }`}
       >
         <CalendarIcon size={20} className="text-blue-500" />
-        <span className="flex-1 text-right text-sm font-black">
+        <span className="flex-1 text-right text-sm font-black" suppressHydrationWarning>
           {displayValue}
         </span>
         <ChevronDown size={16} className={`text-slate-400 transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
