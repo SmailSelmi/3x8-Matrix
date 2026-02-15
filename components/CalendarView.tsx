@@ -14,6 +14,7 @@ import {
   startOfToday,
   differenceInDays,
   startOfDay,
+  isBefore,
   startOfWeek,
   endOfWeek
 } from 'date-fns';
@@ -200,7 +201,9 @@ export default function CalendarView({ startDateStr, workDays, leaveDays, mode =
               <div className="grid grid-cols-7 grid-rows-6 gap-1 md:gap-1.5 lg:gap-2 h-full">
                 {calendarDays.map((day) => {
                   const details = getDayDetails(day);
-                  const isToday = isSameDay(day, new Date());
+                  const today = startOfToday();
+                  const isToday = isSameDay(day, today);
+                  const isPast = isBefore(day, today);
                   const isSelected = selectedDay && isSameDay(day, selectedDay);
                   const isInMonth = isSameMonth(day, monthDate);
                   
@@ -213,11 +216,19 @@ export default function CalendarView({ startDateStr, workDays, leaveDays, mode =
                   if (themeColor === 'bg-blue-500') themeColor = 'blue-500';
                   if (themeColor === 'bg-green-500') themeColor = 'green-500';
 
+                  // Logic Correction: Mask the Past
+                  const isMasked = isPast && !isSelected;
+                  const buttonStyles = isMasked
+                    ? `bg-slate-200/40 dark:bg-slate-800/40 text-slate-400 dark:text-slate-500`
+                    : isSelected 
+                      ? `${details.color} text-white shadow-xl shadow-${themeColor}/30 scale-105 ring-2 ring-white/50 z-20` 
+                      : `bg-${themeColor}/5 text-${themeColor} hover:bg-${themeColor}/15 shadow-sm hover:shadow-md`;
+
                   return (
                     <motion.button
                       key={day.toISOString()}
                       whileTap={{ scale: 0.95 }}
-                      whileHover={{ scale: 1.05, y: -2, zIndex: 30 }}
+                      whileHover={isMasked ? {} : { scale: 1.05, y: -2, zIndex: 30 }}
                       layoutId={isSelected ? 'selected-day' : undefined}
                       onClick={() => {
                         setSelectedDay(day);
@@ -228,20 +239,20 @@ export default function CalendarView({ startDateStr, workDays, leaveDays, mode =
                       className={`
                         relative flex flex-col items-center justify-center rounded-xl md:rounded-2xl transition-all duration-300
                         ${!isInMonth ? 'opacity-20 grayscale' : 'opacity-100'}
-                        ${isSelected 
-                          ? `${details.color} text-white shadow-xl shadow-${themeColor}/30 scale-105 ring-2 ring-white/50 z-20` 
-                          : `bg-${themeColor}/5 text-${themeColor} hover:bg-${themeColor}/15 shadow-sm hover:shadow-md`
-                        }
+                        ${buttonStyles}
                         h-full w-full py-1 lg:py-2
                       `}
                     >
                       <span className={`text-xs md:text-sm font-black tabular-nums z-10 ${isToday && !isSelected ? 'text-blue-500' : ''}`}>
                         {format(day, 'd')}
                       </span>
-                      <details.icon className={`w-3 h-3 md:w-4 md:h-4 mt-1 opacity-80 z-10 ${isSelected ? 'text-white' : ''}`} />
+                      
+                      {!isMasked && (
+                        <details.icon className={`w-3 h-3 md:w-4 md:h-4 mt-1 opacity-80 z-10 ${isSelected ? 'text-white' : ''}`} />
+                      )}
                       
                       {/* Selection Glow Background */}
-                       {isSelected && (
+                       {isSelected && !isMasked && (
                         <motion.div
                           layoutId="selection-glow"
                           className="absolute inset-0 bg-white/20 blur-sm"
