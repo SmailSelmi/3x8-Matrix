@@ -20,7 +20,7 @@ import {
 } from 'date-fns';
 import { arDZ } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, ChevronLeft, Sun, RefreshCw, Moon, Home } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Sun, RefreshCw, Moon, Home, Plane } from 'lucide-react';
 import { ShiftType } from '@/hooks/useShiftLogic';
 
 interface CalendarViewProps {
@@ -80,7 +80,17 @@ export default function CalendarView({ startDateStr, workDays, leaveDays, mode =
       if (microCycleDay === 1) return { type: 'DOUBLE' as ShiftType, label: 'كبير', color: 'bg-red-600', icon: Moon };
       return { type: 'REST' as ShiftType, label: 'راحة', color: 'bg-blue-500', icon: RefreshCw };
     } else {
-      return { type: 'LEAVE' as ShiftType, label: 'إجازة', color: 'bg-green-500', icon: Home };
+      // Leave Logic
+      const isLeaveStart = dayInCycle === workDays;
+      const isLeaveEnd = dayInCycle === cycleLength - 1;
+      return { 
+        type: 'LEAVE' as ShiftType, 
+        label: 'إجازة', 
+        color: 'bg-green-500', 
+        icon: Home,
+        isLeaveStart,
+        isLeaveEnd
+      };
     }
   };
 
@@ -224,6 +234,10 @@ export default function CalendarView({ startDateStr, workDays, leaveDays, mode =
                       ? `${details.color} text-white shadow-xl shadow-${themeColor}/30 scale-105 ring-2 ring-white/50 z-20` 
                       : `bg-${themeColor}/5 text-${themeColor} hover:bg-${themeColor}/15 shadow-sm hover:shadow-md`;
 
+                  // Travel Icon Check
+                  const isLeaveStart = 'isLeaveStart' in details && details.isLeaveStart;
+                  const isLeaveEnd = 'isLeaveEnd' in details && details.isLeaveEnd;
+
                   return (
                     <motion.button
                       key={day.toISOString()}
@@ -244,7 +258,13 @@ export default function CalendarView({ startDateStr, workDays, leaveDays, mode =
                       `}
                     >
                       <span className={`text-xs md:text-sm font-black tabular-nums z-10 ${isToday && !isSelected ? 'text-blue-500' : ''}`}>
-                        {format(day, 'd')}
+                        {isLeaveStart && !isMasked ? (
+                            <Plane className="w-4 h-4 -rotate-45" />
+                        ) : isLeaveEnd && !isMasked ? (
+                            <Plane className="w-4 h-4 rotate-[135deg]" />
+                        ) : (
+                          format(day, 'd')
+                        )}
                       </span>
                       
                       {!isMasked && (
