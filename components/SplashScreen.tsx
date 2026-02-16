@@ -9,12 +9,29 @@ const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"] });
 
 export const SplashScreen = () => {
   const [isVisible, setIsVisible] = useState(true);
+  const [displayedText, setDisplayedText] = useState("");
+  const fullText = "Smail Selmi";
+
+  useEffect(() => {
+    // Typing effect
+    let currentIndex = 0;
+    const typingInterval = setInterval(() => {
+      if (currentIndex <= fullText.length) {
+        setDisplayedText(fullText.slice(0, currentIndex));
+        currentIndex++;
+      } else {
+        clearInterval(typingInterval);
+      }
+    }, 100); // Speed of typing
+
+    return () => clearInterval(typingInterval);
+  }, []);
 
   useEffect(() => {
     // Total duration: 2.3 seconds
     const timer = setTimeout(() => {
       setIsVisible(false);
-    }, 2300);
+    }, 2500); // Slightly increased to ensure typing finishes comfortably
 
     return () => clearTimeout(timer);
   }, []);
@@ -23,11 +40,6 @@ export const SplashScreen = () => {
   const letters = Array.from(text);
 
   const container: Variants = {
-    hidden: { opacity: 0 },
-    visible: (i = 1) => ({
-      opacity: 1,
-      transition: { staggerChildren: 0.12, delayChildren: 0.5 },
-    }),
     exit: {
       opacity: 0,
       scale: 1.5, // Lift-off effect (zoom out)
@@ -74,7 +86,7 @@ export const SplashScreen = () => {
     blinking: {
       opacity: [0, 0, 1, 1],
       transition: {
-        duration: 1,
+        duration: 0.8,
         repeat: Infinity,
         repeatDelay: 0,
         ease: "linear",
@@ -109,8 +121,8 @@ export const SplashScreen = () => {
               <Image
                 src="/icons/icon-512x512.png"
                 alt="Logo"
-                width={150} // Slightly smaller logo
-                height={150}
+                width={120} // Reduced size
+                height={120}
                 className="object-contain drop-shadow-2xl"
                 priority
               />
@@ -124,30 +136,20 @@ export const SplashScreen = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.5 }}
-                className="text-xs text-slate-400 dark:text-slate-500 font-mono mb-1" // Reduced to text-xs
+                className="text-[10px] text-slate-400 dark:text-slate-500 font-mono mb-1" // Reduced to text-[10px]
                 >
                 // Created by:
                 </motion.span>
                 
                 {/* Terminal String Style + Blinking Cursor */}
-                <div className="flex items-center text-lg md:text-xl font-bold font-mono"> {/* Reduced to text-lg/xl */}
+                <div className="flex items-center text-base md:text-lg font-bold font-mono"> {/* Reduced to text-base/lg */}
                     <span className="text-blue-600 dark:text-blue-400 mr-2">const</span>
                     <span className="text-emerald-600 dark:text-emerald-400 mr-2">dev</span>
                     <span className="text-slate-400 dark:text-slate-500 mr-2">=</span>
                     <span className="text-amber-600 dark:text-amber-400">"</span>
-                    <motion.div
-                        className="flex overflow-hidden text-amber-600 dark:text-amber-400"
-                        variants={container}
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                    >
-                        {letters.map((letter, index) => (
-                        <motion.span key={index} variants={child}>
-                            {letter === " " ? "\u00A0" : letter}
-                        </motion.span>
-                        ))}
-                    </motion.div>
+                    <span className="text-amber-600 dark:text-amber-400 min-h-[1.5em]">
+                        {displayedText}
+                    </span>
                     <span className="text-amber-600 dark:text-amber-400">"</span>
                     <span className="text-slate-400 dark:text-slate-500">;</span>
                     
@@ -155,18 +157,18 @@ export const SplashScreen = () => {
                     <motion.div
                         variants={cursorVariants}
                         animate="blinking"
-                        className="w-2 h-5 bg-slate-400 dark:bg-slate-500 ml-1" // Adjusted cursor size
+                        className="w-2 h-4 bg-slate-400 dark:bg-slate-500 ml-1" // Adjusted cursor size
                     />
                 </div>
             </div>
 
             {/* Loading Progress Bar */}
-            <div className="w-48 h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden mt-6"> {/* Slightly narrower width */}
+            <div className="w-40 h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden mt-6"> {/* Reduced width */}
                 <motion.div 
                     className="h-full bg-blue-500 dark:bg-blue-400"
                     initial={{ width: "0%" }}
                     animate={{ width: "100%" }}
-                    transition={{ duration: 2.3, ease: "linear" }}
+                    transition={{ duration: 2.5, ease: "linear" }} // Synced with new timer
                 />
             </div>
           </div>
