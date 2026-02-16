@@ -3,6 +3,9 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import Image from "next/image";
+import { JetBrains_Mono } from "next/font/google";
+
+const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"] });
 
 export const SplashScreen = () => {
   const [isVisible, setIsVisible] = useState(true);
@@ -84,12 +87,12 @@ export const SplashScreen = () => {
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-between bg-gradient-to-br from-slate-50 to-slate-200 dark:from-slate-900 dark:to-slate-950 p-10 overflow-hidden"
+          className={`fixed inset-0 z-[100] flex flex-col items-center justify-between bg-gradient-to-br from-slate-50 to-slate-200 dark:from-slate-900 dark:to-slate-950 p-10 overflow-hidden ${jetbrainsMono.className}`}
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0, transition: { duration: 0.8, ease: "easeInOut" } }} // Fade out container
+          exit={{ opacity: 0, transition: { duration: 0.8, ease: "easeInOut" } }}
           dir="ltr"
         >
-          {/* Dynamic Background Circle (Optional subtle movement) */}
+          {/* Dynamic Background Circle */}
           <motion.div 
             className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-900/10 pointer-events-none"
             animate={{ rotate: 360 }}
@@ -106,8 +109,8 @@ export const SplashScreen = () => {
               <Image
                 src="/icons/icon-512x512.png"
                 alt="Logo"
-                width={180}
-                height={180}
+                width={150} // Slightly smaller logo
+                height={150}
                 className="object-contain drop-shadow-2xl"
                 priority
               />
@@ -121,13 +124,13 @@ export const SplashScreen = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.5 }}
-                className="text-sm text-slate-400 dark:text-slate-500 font-mono mb-1"
+                className="text-xs text-slate-400 dark:text-slate-500 font-mono mb-1" // Reduced to text-xs
                 >
                 // Created by:
                 </motion.span>
                 
                 {/* Terminal String Style + Blinking Cursor */}
-                <div className="flex items-center text-3xl font-bold font-mono">
+                <div className="flex items-center text-lg md:text-xl font-bold font-mono"> {/* Reduced to text-lg/xl */}
                     <span className="text-blue-600 dark:text-blue-400 mr-2">const</span>
                     <span className="text-emerald-600 dark:text-emerald-400 mr-2">dev</span>
                     <span className="text-slate-400 dark:text-slate-500 mr-2">=</span>
@@ -152,13 +155,13 @@ export const SplashScreen = () => {
                     <motion.div
                         variants={cursorVariants}
                         animate="blinking"
-                        className="w-3 h-8 bg-slate-400 dark:bg-slate-500 ml-1"
+                        className="w-2 h-5 bg-slate-400 dark:bg-slate-500 ml-1" // Adjusted cursor size
                     />
                 </div>
             </div>
 
             {/* Loading Progress Bar */}
-            <div className="w-64 h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden mt-6">
+            <div className="w-48 h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden mt-6"> {/* Slightly narrower width */}
                 <motion.div 
                     className="h-full bg-blue-500 dark:bg-blue-400"
                     initial={{ width: "0%" }}
