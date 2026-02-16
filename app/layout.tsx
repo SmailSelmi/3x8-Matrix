@@ -26,6 +26,8 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
+import { SplashScreen } from "@/components/SplashScreen";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -40,9 +42,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <SplashScreen />
           {children}
         </ThemeProvider>
       </body>
+
     </html>
   );
 }
