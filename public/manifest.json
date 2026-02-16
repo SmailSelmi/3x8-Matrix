@@ -1,11 +1,11 @@
 {
-  "name": "حاسبة المناوبات",
-  "short_name": "مناوبتي",
+  "name": "Trois Huit",
+  "short_name": "Trois Huit",
   "description": "تطبيق لحساب جداول العمل والإجازات للعمال بنظام المناوبات",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#020617",
-  "theme_color": "#020617",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
   "orientation": "portrait",
   "icons": [
     {

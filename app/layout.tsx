@@ -10,7 +10,7 @@ const tajawal = Tajawal({
 });
 
 export const metadata: Metadata = {
-  title: "حاسبة المناوبات",
+  title: "Trois Huit",
   description: "تطبيق لحساب الإجازات الشهرية",
   manifest: "/manifest.json",
   icons: {
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#020617",
+  themeColor: "#ffffff",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
