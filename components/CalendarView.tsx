@@ -336,7 +336,7 @@ export default function CalendarView({
                   let buttonStyles = `bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800`;
                   
                   if (isSelected) {
-                    buttonStyles = `${details.color} text-white shadow-xl shadow-${themeColor}/40 scale-105 ring-4 ring-white dark:ring-slate-900 z-30`;
+                    buttonStyles = `${details.color} text-white shadow-xl shadow-${themeColor}/60 scale-110 ring-2 ring-offset-2 ring-offset-slate-100 dark:ring-offset-slate-900 ring-${themeColor} z-30`;
                   } else if (isStartDate) {
                     buttonStyles = `bg-slate-900 dark:bg-black text-white shadow-lg ring-2 ring-yellow-500 z-20 font-black overflow-hidden`;
                   } else if (isMasked) {
