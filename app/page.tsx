@@ -199,9 +199,12 @@ export default function Home() {
                       window.navigator.vibrate(50);
                     }
 
+                    const isLeave = shift.type === 'LEAVE';
+                    const remainingLabel = isLeave ? 'المتبقي من الإجازة' : 'المتبقي حتى الإجازة';
+                    
                     const shareData = {
                       title: 'تطبيق مناوباتي',
-                      text: `📅 حالتي اليوم: ${shift.label}\n⏳ ${isToday ? 'باقي' : 'المدة'}: ${shift.daysRemaining} يوم\n\nشوف جدولك وخطط إجازتك من هنا:`,
+                      text: `📋 تقرير المناوبة:\n📌 الحالة: ${shift.label}\n⏳ ${remainingLabel}: ${shift.daysRemaining} يوم\n\nرابط الجدول:`,
                       url: window.location.href,
                     };
 
@@ -218,12 +221,12 @@ export default function Home() {
                       if (navigator.clipboard) {
                          navigator.clipboard.writeText(textToCopy)
                            .then(() => {
-                              setShowShareToast(true);
-                              setTimeout(() => setShowShareToast(false), 2000);
+                               setShowShareToast(true);
+                               setTimeout(() => setShowShareToast(false), 2000);
                            })
                            .catch(() => {
-                              // Fallback if writeText fails
-                              fallbackCopyTextToClipboard(textToCopy);
+                               // Fallback if writeText fails
+                               fallbackCopyTextToClipboard(textToCopy);
                            });
                       } else {
                          // Fallback for older browsers / non-secure contexts
@@ -282,6 +285,7 @@ export default function Home() {
             {/* النصوص والعداد */}
             <div className="text-center space-y-3 relative">
                 <motion.div
+                  className="pt-8 md:pt-0"
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.4 }}
@@ -290,11 +294,11 @@ export default function Home() {
                     <span className={`w-1.5 h-1.5 rounded-full ${isRest ? 'bg-blue-500' : 'bg-orange-500'} ${isToday ? 'animate-pulse' : ''}`} />
                     <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider">
                       {isToday 
-                        ? (shift.type === 'LEAVE' ? 'إجازة سعيدة' : shift.type === 'REST' ? 'يوم راحة' : 'راك خدام')
+                        ? (shift.type === 'LEAVE' ? 'إجازة سعيدة' : shift.type === 'REST' ? 'يوم راحة' : 'مناوبة اليوم')
                         : `مناوبة ${selectedDate.toLocaleDateString('ar-DZ')}`}
                     </span>
                   </div>
-                  <h1 className="text-4xl md:text-5xl font-black tracking-tighter mb-1">
+                  <h1 className="text-4xl md:text-5xl font-black tracking-tighter mb-1 pt-4 md:pt-0">
                     {shift.label}
                   </h1>
                 </motion.div>

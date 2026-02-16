@@ -170,7 +170,7 @@ export default function ShiftInsights({ daysPassed, totalWorkDays, startShiftOff
             </div>
 
             {/* Footer (Divider + Label) */}
-            <div className="w-full border-t border-white/5 bg-black/10 p-2 flex items-center justify-center gap-2 z-10">
+            <div className="w-full border-t border-white/5 bg-white/10 dark:bg-white/5 backdrop-blur-md p-2 flex items-center justify-center gap-2 z-10">
                 <card.icon size={12} strokeWidth={2.5} className="opacity-70 group-hover:opacity-100 transition-opacity" />
                 <span className="text-[10px] uppercase font-bold tracking-widest opacity-60 group-hover:opacity-100 transition-opacity">
                     {card.label}

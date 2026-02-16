@@ -142,7 +142,7 @@ export const SplashScreen = () => {
                 </motion.span>
                 
                 {/* Terminal String Style + Blinking Cursor */}
-                <div className="flex items-center text-base md:text-lg font-bold font-mono"> {/* Reduced to text-base/lg */}
+                <div className="flex items-center text-base md:text-lg font-mono"> {/* Reduced to text-base/lg */}
                     <span className="text-blue-600 dark:text-blue-400 mr-2">const</span>
                     <span className="text-emerald-600 dark:text-emerald-400 mr-2">dev</span>
                     <span className="text-slate-400 dark:text-slate-500 mr-2">=</span>
