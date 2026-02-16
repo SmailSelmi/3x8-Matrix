@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   description: "تطبيق لحساب الإجازات الشهرية",
   manifest: "/manifest.json",
   icons: {
-    apple: "/icons/icon-192x192.png",
+    apple: "/icons/apple-icon.png",
   },
 };
 
