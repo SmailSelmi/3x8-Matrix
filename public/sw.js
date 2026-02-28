@@ -1,16 +1,22 @@
 // public/sw.js
-const CACHE_NAME = 'trois-huit-v2';
+const CACHE_NAME = 'trois-huit-v3';
 const PRE_CACHE = [
   '/',
   '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png'
+  '/icons/icon-192x192.png',
+  '/icons/icon-512x512.png'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(PRE_CACHE))
+    caches.open(CACHE_NAME).then(async (cache) => {
+      // Use individual adds so a single 404 never aborts the whole SW install
+      await Promise.allSettled(
+        PRE_CACHE.map((url) => cache.add(url).catch((err) => {
+          console.warn('[SW] Failed to cache:', url, err);
+        }))
+      );
+    })
   );
   self.skipWaiting();
 });
@@ -45,8 +51,8 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: data.body,
-    icon: '/icons/icon-192.png',
-    badge: '/icons/icon-192.png',
+    icon: '/icons/icon-192x192.png',
+    badge: '/icons/icon-192x192.png',
     vibrate: [200, 100, 200],
     tag: 'broadcast',
     renotify: true,

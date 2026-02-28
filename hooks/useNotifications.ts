@@ -23,8 +23,8 @@ export const useNotifications = (
 
       const registration = await navigator.serviceWorker.ready;
       registration.showNotification(title, {
-        icon: "/icons/icon-192.png",
-        badge: "/icons/icon-192.png",
+        icon: "/icons/icon-192x192.png",
+        badge: "/icons/icon-192x192.png",
         vibrate: [200, 100, 200],
         ...options,
       } as any);
