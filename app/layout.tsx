@@ -3,6 +3,7 @@ import { Tajawal, JetBrains_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import type { Metadata, Viewport } from "next";
 
 const tajawal = Tajawal({
@@ -68,20 +69,13 @@ export default function RootLayout({
           forcedTheme="dark"
           disableTransitionOnChange
         >
-          <SWRegistration />
+          <ServiceWorkerRegistration />
           <ThemeAccentApplier />
           {children}
         </ThemeProvider>
       </body>
     </html>
   );
-}
-
-function SWRegistration() {
-  if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-    navigator.serviceWorker.register("/sw.js").catch(console.error);
-  }
-  return null;
 }
 
 function ThemeAccentApplier() {

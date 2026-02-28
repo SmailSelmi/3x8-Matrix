@@ -72,8 +72,22 @@ export function usePushSubscription(): UsePushSubscriptionReturn {
         return;
       }
 
-      // 3. Get the active service worker registration
-      const registration = await navigator.serviceWorker.ready;
+      // 3. Get the active service worker registration (with 10s timeout)
+      const swReadyTimeout = new Promise<never>((_, reject) =>
+        setTimeout(
+          () =>
+            reject(
+              new Error(
+                "Service Worker لم يُفعَّل خلال 10 ثوانٍ. حاول إعادة تحميل الصفحة.",
+              ),
+            ),
+          10000,
+        ),
+      );
+      const registration = await Promise.race([
+        navigator.serviceWorker.ready,
+        swReadyTimeout,
+      ]);
 
       // 4. Check if already subscribed at the SW level to avoid duplicate DB rows
       let subscription = await registration.pushManager.getSubscription();
