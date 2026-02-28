@@ -2,15 +2,15 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ShiftType } from '@/hooks/useShiftLogic';
+import { ShiftType } from '@/lib/shiftPatterns';
 
 interface Props {
   type: ShiftType;
 }
 
 const ShiftAnimation: React.FC<Props> = ({ type }) => {
-  const isLeave = type === 'LEAVE';
-  const isRest = type === 'REST';
+  const isLeave = type === 'leave';
+  const isRest = type === 'rest';
   const isWork = !isLeave && !isRest;
 
   return (
@@ -26,7 +26,7 @@ const ShiftAnimation: React.FC<Props> = ({ type }) => {
         {isLeave ? (
           <VacationScene />
         ) : (
-          <WorkCycleScene isAfternoon={type === 'AFTERNOON'} isDouble={type === 'DOUBLE'} />
+          <WorkCycleScene isAfternoon={type === 'evening'} isDouble={type === 'night'} />
         )}
       </motion.div>
     </div>

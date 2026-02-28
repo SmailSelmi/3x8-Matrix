@@ -158,27 +158,6 @@ export default function DatePickerAr({ selectedDate, onChange }: Props) {
                 );
               })}
             </div>
-
-            {/* Footer: Today Button */}
-            <div className="px-6 pb-6 pt-2 flex gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  triggerHaptic(20);
-                  handleSelect(new Date());
-                }}
-                className="flex-1 text-[11px] py-4 bg-blue-600 text-white font-black rounded-2xl transition-all active:scale-95 shadow-xl shadow-blue-500/30 flex items-center justify-center gap-2"
-              >
-                <Check size={14} /> اذهب لليوم
-              </button>
-              <button
-                type="button"
-                onClick={() => { triggerHaptic(5); setOpen(false); }}
-                className="flex-1 text-[11px] py-4 bg-slate-100 dark:bg-white/5 text-foreground font-bold rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2"
-              >
-                <X size={14} /> إغلاق
-              </button>
-            </div>
           </motion.div>
         )}
       </AnimatePresence>

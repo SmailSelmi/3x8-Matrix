@@ -2,86 +2,108 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Battery, BatteryCharging, BatteryWarning } from "lucide-react";
+import { Battery, BatteryCharging, Activity, Sun, Moon, Briefcase } from "lucide-react";
+import { SystemType, ShiftType } from "@/lib/shiftPatterns";
 
 interface EnergyChartProps {
-  currentShiftOffset: number; // 0, 1, or 2 (Afternoon, Double, Rest)
+  currentShiftOffset: number;
+  systemType?: SystemType;
+  shiftType: ShiftType;
 }
 
-export default function EnergyChart({ currentShiftOffset }: EnergyChartProps) {
-  // Define the 3-day cycle pattern
-  // 0: Afternoon (Start of cycle) -> Medium Energy (70%)
-  // 1: Double (Heavy work) -> Low Energy (30%)
-  // 2: Rest (Recovery) -> High Energy (100%)
+export default function EnergyChart({ currentShiftOffset, systemType = '3x8_industrial', shiftType }: EnergyChartProps) {
   
-  const energyLevels = [
-    { label: "مساْء", level: 70, color: "bg-yellow-400", text: "text-yellow-400", icon: Battery },
-    { label: "ليل", level: 30, color: "bg-red-500", text: "text-red-500", icon: BatteryWarning },
-    { label: "راحة", level: 100, color: "bg-green-500", text: "text-green-500", icon: BatteryCharging },
-  ];
+  const getLevels = () => {
+    if (systemType === '5x2_admin') {
+        if (shiftType === 'rest') return { level: 100, label: "راحة إسبوعية", color: "text-emerald-400" };
+        if (shiftType === 'leave') return { level: 100, label: "إجازة", color: "text-emerald-400" };
+        
+        // Split hours logic for Admin (approximate for display)
+        const hour = new Date().getHours();
+        if (hour >= 8 && hour < 12) return { level: 85, label: "فترة الصباح", color: "text-blue-400" };
+        if (hour >= 12 && hour < 14) return { level: 60, label: "إستراحة غداء", color: "text-yellow-400" };
+        if (hour >= 14 && hour < 17) return { level: 75, label: "فترة المساء", color: "text-blue-400" };
+        return { level: 95, label: "خارج الدوام", color: "text-indigo-400" };
+    }
 
-  // We want to show a sequence: Previous -> Current -> Next
-  // But for a simple "Bio-Rhythm", maybe just showing the generic 3-step cycle 
-  // and highlighting the *current* step is clearer.
-  
-  // Let's create a visual curve.
-  
+    // 3x8 System
+    if (shiftType === 'rest' || shiftType === 'leave') return { level: 100, label: "إسترجاع الطاقة", color: "text-emerald-400" };
+    if (shiftType === 'evening') return { level: 70, label: "نشاط متوسط", color: "text-yellow-400" };
+    if (shiftType === 'night') return { level: 30, label: "مجهود عالٍ", color: "text-red-400" };
+    
+    return { level: 50, label: "نشاط", color: "text-slate-400" };
+  };
+
+  const status = getLevels();
+
   return (
-    <div className="w-full h-full flex flex-col justify-between">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400">مؤشر الطاقة (Bio-Rhythm)</h3>
-        <div className="text-xs font-mono opacity-50">3-Day Cycle</div>
+    <div className="w-full h-full flex flex-col group">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+            <div className={`p-1.5 rounded-lg bg-white/5 border border-white/10 ${status.color}`}>
+                <Activity size={14} />
+            </div>
+            <h3 className="text-xs font-black uppercase tracking-widest opacity-60">البوصلة الحيوية</h3>
+        </div>
+        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/5 border border-white/10 ${status.color}`}>
+            {status.label}
+        </span>
       </div>
 
-      <div className="flex-1 flex items-end justify-between gap-2 relative px-2">
-        {/* Connection Line (Background) */}
-        <div className="absolute top-0 left-0 right-0 bottom-0 pointer-events-none">
-             <svg className="w-full h-full overflow-visible">
-                {/* Curve connecting tops of bars.
-                    Afternoon (idx 0): Level 70% -> 30% from top. Center ~16% width.
-                    Double (idx 1): Level 30% -> 70% from top. Center ~50% width.
-                    Rest (idx 2): Level 100% -> 0% from top. Center ~84% width.
-                */}
-                <path 
-                    d="M 16% 30% C 30% 30%, 36% 70%, 50% 70% C 64% 70%, 70% 0%, 84% 0%" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeDasharray="4 4"
-                    className="text-slate-300 dark:text-white/20 opacity-50"
-                />
-             </svg>
-        </div>
-
-        {energyLevels.map((item, index) => {
-            const isCurrent = index === currentShiftOffset % 3;
+      <div className="flex-1 relative flex items-center justify-center overflow-hidden">
+        {/* Animated Wave Background */}
+        <svg viewBox="0 0 200 100" className="w-full h-24 overflow-visible">
+            <defs>
+                <linearGradient id="waveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="rgba(59, 130, 246, 0)" />
+                    <stop offset="50%" stopColor="currentColor" />
+                    <stop offset="100%" stopColor="rgba(59, 130, 246, 0)" />
+                </linearGradient>
+            </defs>
             
-            return (
-                <div key={index} className="flex flex-col items-center gap-2 z-10 w-1/3">
-                    {/* Bar / Point */}
-                    <motion.div 
-                        initial={{ height: 0 }}
-                        animate={{ height: `${item.level}%` }}
-                        transition={{ duration: 1, type: "spring" }}
-                        className={`
-                            w-full max-w-[40px] rounded-t-xl relative group
-                            ${isCurrent ? item.color : "bg-slate-200 dark:bg-white/5"}
-                        `}
-                    >
-                         {/* Icon on top */}
-                         <div className={`absolute -top-8 left-1/2 -translate-x-1/2 transition-all ${isCurrent ? "scale-110 opacity-100" : "scale-75 opacity-50"}`}>
-                             <item.icon size={20} className={isCurrent ? item.text : "text-slate-400"} />
-                         </div>
-                    </motion.div>
-                    
-                    {/* Label */}
-                    <span className={`text-xs font-bold ${isCurrent ? "text-foreground" : "text-muted-foreground"}`}>
-                        {item.label}
-                    </span>
-                    <span className="text-[10px] font-mono opacity-60">{item.level}%</span>
-                </div>
-            );
-        })}
+            <motion.path
+                d="M 0 50 Q 50 10, 100 50 T 200 50"
+                fill="none"
+                stroke="url(#waveGradient)"
+                strokeWidth="2"
+                className={status.color}
+                animate={{
+                    d: [
+                        "M 0 50 Q 50 10, 100 50 T 200 50",
+                        "M 0 50 Q 50 90, 100 50 T 200 50",
+                        "M 0 50 Q 50 10, 100 50 T 200 50"
+                    ]
+                }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            />
+
+            {/* Current Point Marker */}
+            <motion.circle 
+                cx="100" cy="50" r="4" 
+                className={status.color}
+                fill="currentColor"
+            />
+            <motion.circle 
+                cx="100" cy="50" r="12" 
+                className={status.color}
+                fill="currentColor"
+                initial={{ opacity: 0.3, scale: 1 }}
+                animate={{ opacity: 0, scale: 2 }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+            />
+        </svg>
+
+        {/* Big Percentage Display */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <span className={`text-4xl lg:text-5xl font-black tracking-tighter tabular-nums ${status.color}`}>
+                {status.level}%
+            </span>
+        </div>
+      </div>
+
+      <div className="mt-4 flex justify-between items-center text-[10px] font-bold opacity-40 uppercase tracking-widest">
+         <span>{systemType === '5x2_admin' ? 'النظام الإداري' : `دورة الصناعة`}</span>
+         {status.level === 100 ? <BatteryCharging size={14} className="text-emerald-400" /> : <Battery size={14} />}
       </div>
     </div>
   );

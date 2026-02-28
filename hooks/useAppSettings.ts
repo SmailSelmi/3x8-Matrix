@@ -1,63 +1,87 @@
-import { useSyncExternalStore, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
+import { SystemType } from "@/lib/shiftPatterns";
 
-const STORAGE_KEY = 'shift_app_settings';
+export type AccentColor = "blue" | "emerald" | "violet" | "amber";
 
 export interface AppSettings {
-  startDate: string; // YYYY-MM-DD
-  workDays: number;
-  leaveDays: number;
-  calculationMode?: 'START_WORK' | 'START_LEAVE';
-  startShiftOffset?: number; // 0: Afternoon, 1: Double, 2: Rest
+  userName: string;
+  systemType: SystemType;
+  cycleStartDate: string;
+  initialCycleDay: number; // 1, 2, or 3 for 3x8
+  workDuration: number; // days in work period
+  vacationDuration: number; // days in vacation period
+  addRouteDays: boolean; // add 2 days (travel) to vacation
+  language: "ar" | "en";
+  notifications: boolean;
+  notificationLeadTime: number; // minutes
+  hapticFeedback: boolean;
+  theme: "dark" | "midnight";
+  accentColor: AccentColor; // primary glow/highlight color
+  profileImage?: string | null;
+  dismissedAnnouncements: string[]; // Legacy
+  announcementDismissals: Record<string, number>;
+  annualLeaveTotal: number;
+  annualLeaveBlocks: { id: string; start: string; end: string }[];
+  workDurationExtension: number; // days added to current cycle
 }
 
-// Helper to get from localStorage safely
-const getSnapshot = () => {
-  if (typeof window === 'undefined') return null;
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (!saved) return null;
-  try {
-    const parsed = JSON.parse(saved) as AppSettings;
-    if (parsed.startDate && parsed.workDays > 0 && parsed.leaveDays > 0) {
-      return saved; // Return the string to avoid unnecessary re-renders (parsing happens later)
-    }
-  } catch {
-    // Ignore error
-  }
-  return null;
-};
+const STORAGE_KEY = "trois_huit_settings";
 
-const subscribe = (callback: () => void) => {
-  window.addEventListener('storage', callback);
-  window.addEventListener('shift_settings_changed', callback);
-  return () => {
-    window.removeEventListener('storage', callback);
-    window.removeEventListener('shift_settings_changed', callback);
-  };
+const DEFAULTS: AppSettings = {
+  userName: "المستخدم",
+  systemType: "3x8_industrial",
+  cycleStartDate: "2024-01-01",
+  initialCycleDay: 1,
+  workDuration: 28,
+  vacationDuration: 7,
+  addRouteDays: false,
+  language: "ar",
+  notifications: true,
+  notificationLeadTime: 30,
+  hapticFeedback: true,
+  theme: "dark",
+  accentColor: "blue",
+  profileImage: null,
+  dismissedAnnouncements: [],
+  announcementDismissals: {},
+  annualLeaveTotal: 30,
+  annualLeaveBlocks: [],
+  workDurationExtension: 0,
 };
 
 export const useAppSettings = () => {
-  const settingsRaw = useSyncExternalStore(subscribe, getSnapshot, () => null);
-  
-  const settings: AppSettings | null = settingsRaw ? JSON.parse(settingsRaw) : null;
-  const loading = false; // With useSyncExternalStore, it's immediately synced or null
+  const [settings, setSettings] = useState<AppSettings>(DEFAULTS);
+  const [loading, setLoading] = useState(true);
+  const [isFirstLaunch, setIsFirstLaunch] = useState(false);
 
-  const saveSettings = useCallback((newSettings: AppSettings) => {
-    const cleaned: AppSettings = {
-      startDate: newSettings.startDate,
-      workDays: Math.max(1, Math.round(newSettings.workDays)),
-      leaveDays: Math.max(1, Math.round(newSettings.leaveDays)),
-      calculationMode: newSettings.calculationMode || 'START_WORK',
-      startShiftOffset: newSettings.startShiftOffset ?? 0,
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
-    window.dispatchEvent(new Event('shift_settings_changed'));
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        setSettings(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse settings", e);
+        setSettings(DEFAULTS);
+      }
+    } else {
+      setIsFirstLaunch(true);
+    }
+    setLoading(false);
   }, []);
 
-  const clearSettings = useCallback(() => {
+  const updateSettings = useCallback((newSettings: Partial<AppSettings>) => {
+    setSettings((prev) => {
+      const updated = { ...prev, ...newSettings };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  const resetSettings = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
-    window.dispatchEvent(new Event('shift_settings_changed'));
+    setSettings(DEFAULTS);
+    setIsFirstLaunch(true);
   }, []);
 
-  return { settings, loading, saveSettings, clearSettings };
+  return { settings, updateSettings, resetSettings, loading, isFirstLaunch };
 };
-

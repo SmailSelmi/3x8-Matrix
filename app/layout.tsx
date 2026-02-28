@@ -1,32 +1,38 @@
-import { Tajawal } from "next/font/google";
+// app/layout.tsx
+import { Tajawal, JetBrains_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import type { Metadata, Viewport } from "next";
 
-const tajawal = Tajawal({ 
+const tajawal = Tajawal({
   subsets: ["arabic"],
-  weight: ['400', '500', '700', '800', '900'],
-  variable: '--font-tajawal'
+  weight: ["300", "400", "500", "700"],
+  variable: "--font-tajawal",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
 });
 
 export const metadata: Metadata = {
-  title: "Trois Huit",
-  description: "تطبيق لحساب الإجازات الشهرية",
+  title: "Trois Huit | 3x8",
+  description: "Advanced shift management PWA",
   manifest: "/manifest.json",
-  icons: {
-    apple: "/icons/apple-icon.png",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Trois Huit",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#ffffff",
+  themeColor: "#020617",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  viewportFit: "cover",
 };
-
-import { SplashScreen } from "@/components/SplashScreen";
 
 export default function RootLayout({
   children,
@@ -34,19 +40,61 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
-      <body suppressHydrationWarning className={`${tajawal.variable} font-tajawal antialiased selection:bg-blue-500/30`}>
+    <html
+      lang="ar"
+      dir="rtl"
+      className="dark"
+      style={{ colorScheme: "dark" }}
+      suppressHydrationWarning
+    >
+      <body
+        className={`${tajawal.variable} ${jetbrainsMono.variable} antialiased selection:bg-blue-500/30 select-none bg-[#020617] text-[#f8fafc]`}
+      >
+        {/* Microsoft Clarity Analytics */}
+        <Script
+          id="ms-clarity"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(function(c,l,a,r,i,t,y){
+              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+            })(window, document, "clarity", "script", "vonl4y7r9x");`,
+          }}
+        />
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="dark"
+          forcedTheme="dark"
           disableTransitionOnChange
         >
-          <SplashScreen />
+          <SWRegistration />
+          <ThemeAccentApplier />
           {children}
         </ThemeProvider>
       </body>
-
     </html>
   );
+}
+
+function SWRegistration() {
+  if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/sw.js").catch(console.error);
+  }
+  return null;
+}
+
+function ThemeAccentApplier() {
+  if (typeof window !== "undefined") {
+    try {
+      const saved = localStorage.getItem("trois_huit_settings");
+      if (saved) {
+        const { accentColor } = JSON.parse(saved);
+        if (accentColor) {
+          document.documentElement.setAttribute("data-accent", accentColor);
+        }
+      }
+    } catch (_) {}
+  }
+  return null;
 }

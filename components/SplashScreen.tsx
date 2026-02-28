@@ -99,7 +99,7 @@ export const SplashScreen = () => {
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          className={`fixed inset-0 z-[100] flex flex-col items-center justify-between bg-gradient-to-br from-slate-50 to-slate-200 dark:from-slate-900 dark:to-slate-950 p-10 overflow-hidden ${jetbrainsMono.className}`}
+          className={`fixed inset-0 z-[1000] flex flex-col items-center justify-between bg-gradient-to-br from-slate-50 to-slate-200 dark:from-slate-900 dark:to-slate-950 p-10 overflow-hidden ${jetbrainsMono.className}`}
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: 0.8, ease: "easeInOut" } }}
           dir="ltr"

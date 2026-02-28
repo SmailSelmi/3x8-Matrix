@@ -1,15 +1,19 @@
 import React, { useEffect } from 'react';
 import { motion, useSpring, useTransform } from 'framer-motion';
-import { Plane, RotateCw, Zap, Layers, Sun, Moon } from 'lucide-react';
+import { Plane, RotateCw, Zap, Layers, Sun, Moon, TrendingUp, Briefcase, Coffee } from 'lucide-react';
+import { SystemType } from '@/lib/shiftPatterns';
+import { getDay, addDays } from 'date-fns';
 
 interface ShiftInsightsProps {
   daysPassed: number;
   totalWorkDays: number;
   startShiftOffset: number;
+  systemType?: SystemType;
+  startDateStr: string;
 }
 
 const AnimatedValue = ({ value, toFixed = 0, className }: { value: number, toFixed?: number, className?: string }) => {
-  const spring = useSpring(0, { stiffness: 50, damping: 15 });
+  const spring = useSpring(0, { stiffness: 40, damping: 12 });
   const display = useTransform(spring, (current) => current.toFixed(toFixed));
 
   useEffect(() => {
@@ -19,162 +23,134 @@ const AnimatedValue = ({ value, toFixed = 0, className }: { value: number, toFix
   return <motion.span className={className}>{display}</motion.span>;
 };
 
-export default function ShiftInsights({ daysPassed, totalWorkDays, startShiftOffset }: ShiftInsightsProps) {
+export default function ShiftInsights({ daysPassed, totalWorkDays, startShiftOffset, systemType = '3x8_industrial', startDateStr }: ShiftInsightsProps) {
   
-  // 1. Days to Fly
+  // 1. Days to Fly (Premium presentation)
   const daysToFly = Math.max(0, totalWorkDays - daysPassed);
 
-  // 2. Cycle Count
-  const cyclesDoneNum = daysPassed > 0 ? daysPassed / 3 : 0;
-  const totalCycles = totalWorkDays / 3;
+  // 2. Cycle Progress (Advanced calculation)
+  // For shift system, 1 cycle = 3 days. For admin, it's just one phase.
+  const progressDivisor = systemType === '3x8_industrial' ? 3 : 1;
+  const cyclesDoneNum = daysPassed > 0 ? daysPassed / progressDivisor : 0;
+  const totalCycles = totalWorkDays / progressDivisor;
   const currentCycleProgress = Math.min(100, (cyclesDoneNum / totalCycles) * 100);
 
-  // 3. Hours Worked
+  // 3. Productivity Stats & Shift Balance
   let hoursCrushed = 0;
-  const daysToCalculate = Math.max(0, daysPassed);
-  
-  for (let i = 0; i < daysToCalculate; i++) {
-     const shiftType = (i + startShiftOffset) % 3;
-     if (shiftType === 0) hoursCrushed += 7;
-     if (shiftType === 1) hoursCrushed += 17;
-  }
-
-  // 4. Shift Breakdown
   let afternoonCount = 0;
   let doubleCount = 0;
-  const startIndex = Math.max(0, daysPassed);
-  
-  for (let i = startIndex; i < totalWorkDays; i++) {
-    const shiftType = (i + startShiftOffset) % 3;
-    if (shiftType === 0) afternoonCount++;
-    if (shiftType === 1) doubleCount++;
+  let adminWorkDaysRemaining = 0;
+  let adminRestDaysRemaining = 0;
+
+  const [y, m, d] = startDateStr.split('-').map(Number);
+  const cycleStartDate = new Date(y, m - 1, d);
+
+  // Calculated Passed Hours
+  for (let i = 0; i < Math.max(0, daysPassed); i++) {
+     const currentDayDate = addDays(cycleStartDate, i);
+     if (systemType === '5x2_admin') {
+         const dayOfWeek = getDay(currentDayDate);
+         if (dayOfWeek !== 5 && dayOfWeek !== 6) {
+             hoursCrushed += 7; // 4 + 3
+         }
+     } else {
+         const shiftType = (i + startShiftOffset) % 3;
+         if (shiftType === 0) hoursCrushed += 7.5; // Afternoon
+         if (shiftType === 1) hoursCrushed += 11.5; // Double
+     }
   }
 
-  const totalRemaining = afternoonCount + doubleCount || 1;
-  const afternoonPct = (afternoonCount / totalRemaining) * 100;
-  const doublePct = (doubleCount / totalRemaining) * 100;
+  // Calculated Remaining Balance
+  for (let i = Math.max(0, daysPassed); i < totalWorkDays; i++) {
+    const currentDayDate = addDays(cycleStartDate, i);
+    if (systemType === '5x2_admin') {
+        const dayOfWeek = getDay(currentDayDate);
+        if (dayOfWeek === 5 || dayOfWeek === 6) adminRestDaysRemaining++;
+        else adminWorkDaysRemaining++;
+    } else {
+        const shiftType = (i + startShiftOffset) % 3;
+        if (shiftType === 0) afternoonCount++;
+        if (shiftType === 1) doubleCount++;
+    }
+  }
 
   const cards = [
     {
-      label: "الأيام المتبقية",
-      value: daysToFly === 0 ? (
-        <span className="text-3xl lg:text-4xl text-green-300 animate-pulse">يوم السفر ✈️</span>
-      ) : (
-        <AnimatedValue value={daysToFly} className="font-mono" />
-      ),
+      label: "المغادرة",
+      value: daysToFly === 0 ? "يوم السفر!" : <AnimatedValue value={daysToFly} />,
+      sub: daysToFly === 0 ? "✈️ استمتع" : "يوم متبقي",
       icon: Plane,
-      color: "text-green-400",
-      bg: daysToFly === 0 ? "bg-green-500/20" : "bg-green-500/10",
-      border: "border-green-500/20",
+      color: "text-emerald-400",
+      bg: "from-emerald-500/10 to-transparent",
       delay: 0.1
     },
     {
-      label: "الدورات المنجزة",
-      value: (
-        <div className="relative flex items-center justify-center w-16 h-16">
-           <svg className="w-full h-full transform -rotate-90">
-             <circle cx="32" cy="32" r="28" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-blue-500/20" />
-             <circle 
-                cx="32" cy="32" r="28" 
-                stroke="currentColor" strokeWidth="6" 
-                fill="transparent" 
-                className="text-blue-500" 
-                strokeDasharray={175.9} 
-                strokeDashoffset={175.9 - (175.9 * currentCycleProgress) / 100} 
-                strokeLinecap="round"
-             />
-           </svg>
-           <div className="absolute inset-0 flex items-center justify-center text-lg font-black text-blue-400">
-              <AnimatedValue value={cyclesDoneNum} toFixed={1} />
-           </div>
-        </div>
-      ),
-      icon: RotateCw,
+      label: "الإنجاز",
+      value: <div className="flex items-baseline gap-1"><AnimatedValue value={currentCycleProgress} toFixed={1} />%</div>,
+      sub: systemType === '3x8_industrial' ? `${cyclesDoneNum.toFixed(1)} دورة` : `${daysPassed} يوم`,
+      icon: TrendingUp,
       color: "text-blue-400",
-      bg: "bg-blue-500/10",
-      border: "border-blue-500/20",
+      bg: "from-blue-500/10 to-transparent",
       delay: 0.2
     },
     {
-      label: "ساعات العمل",
-      value: <AnimatedValue value={hoursCrushed} className="font-mono" />,
+      label: "الجهد",
+      value: <AnimatedValue value={hoursCrushed} />,
+      sub: "ساعة عمل مُنجزة",
       icon: Zap,
       color: "text-orange-400",
-      bg: "bg-orange-500/10",
-      border: "border-orange-500/20",
+      bg: "from-orange-500/10 to-transparent",
       delay: 0.3
     },
     {
-      label: "المناوبات المتبقية",
-      value: (
-        <div className="flex flex-col gap-2 w-full min-w-[100px] px-2">
-          {/* Afternoon Bar */}
-          <div className="flex items-center gap-2">
-            <Sun size={14} className="text-orange-400 shrink-0" />
-            <div className="flex-1 h-2 bg-orange-500/20 rounded-full overflow-hidden">
-               <motion.div 
-                 initial={{ width: 0 }} 
-                 animate={{ width: `${afternoonPct}%` }} 
-                 className="h-full bg-orange-500" 
-               />
-            </div>
-            <span className="text-xs font-bold text-orange-300 w-4 text-right">{afternoonCount}</span>
-          </div>
-          {/* Double Bar */}
-          <div className="flex items-center gap-2">
-            <Moon size={14} className="text-red-400 shrink-0" />
-            <div className="flex-1 h-2 bg-red-500/20 rounded-full overflow-hidden">
-               <motion.div 
-                 initial={{ width: 0 }} 
-                 animate={{ width: `${doublePct}%` }} 
-                 className="h-full bg-red-500" 
-               />
-            </div>
-            <span className="text-xs font-bold text-red-300 w-4 text-right">{doubleCount}</span>
-          </div>
+      label: "المتبقي",
+      value: systemType === '3x8_industrial' ? (
+        <div className="flex gap-2">
+            <div className="flex items-center gap-1.5"><Sun size={14} />{afternoonCount}</div>
+            <div className="flex items-center gap-1.5"><Moon size={14} />{doubleCount}</div>
+        </div>
+      ) : (
+        <div className="flex gap-2">
+            <div className="flex items-center gap-1.5"><Briefcase size={14} />{adminWorkDaysRemaining}</div>
+            <div className="flex items-center gap-1.5"><Coffee size={14} />{adminRestDaysRemaining}</div>
         </div>
       ),
-      icon: Layers,
-      color: "text-purple-400",
-      bg: "bg-purple-500/10",
-      border: "border-purple-500/20",
+      sub: systemType === '3x8_industrial' ? "توزيع المناوبات" : "عمل / عطلة إسبوع",
+      icon: systemType === '3x8_industrial' ? Layers : Briefcase,
+      color: "text-indigo-400",
+      bg: "from-indigo-500/10 to-transparent",
       delay: 0.4
     }
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3 w-full h-full">
+    <div className="grid grid-cols-2 gap-4 w-full h-full p-2">
       {cards.map((card, idx) => (
         <motion.div
           key={idx}
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: card.delay, duration: 0.3 }}
-          className={`
-            relative overflow-hidden
-            flex flex-col justify-between
-            rounded-2xl backdrop-blur-md transition-all duration-300
-            bg-white/5 border border-white/10
-            hover:bg-white/10 hover:scale-[1.02]
-            group
-          `}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: card.delay, duration: 0.5, ease: "easeOut" }}
+          className="relative group overflow-hidden glass-card rounded-[2rem] p-5 flex flex-col justify-between"
         >
-            {/* Subtle Gradient Glow */}
-            <div className={`absolute -top-10 -right-10 w-24 h-24 rounded-full blur-3xl opacity-20 ${card.bg.replace('/10', '')}`} />
-
-            {/* Main Content (Centered) */}
-            <div className={`flex-1 flex items-center justify-center p-3 z-10 ${card.color}`}>
-                 <div className="text-5xl lg:text-6xl font-black tracking-tighter">
-                    {card.value}
-                 </div>
-            </div>
-
-            {/* Footer (Divider + Label) */}
-            <div className="w-full border-t border-white/5 bg-white/10 dark:bg-white/5 backdrop-blur-md p-2 flex items-center justify-center gap-2 z-10">
-                <card.icon size={12} strokeWidth={2.5} className="opacity-70 group-hover:opacity-100 transition-opacity" />
-                <span className="text-[10px] uppercase font-bold tracking-widest opacity-60 group-hover:opacity-100 transition-opacity">
+            <div className={`absolute inset-0 bg-gradient-to-br ${card.bg} opacity-50`} />
+            
+            <div className="flex justify-between items-start z-10">
+                <div className={`p-2 rounded-2xl bg-white/5 border border-white/10 ${card.color}`}>
+                    <card.icon size={20} strokeWidth={2.5} />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-tighter opacity-40 group-hover:opacity-100 transition-opacity">
                     {card.label}
                 </span>
+            </div>
+
+            <div className="mt-4 z-10">
+                <div className={`text-3xl lg:text-4xl font-black tracking-tighter ${card.color}`}>
+                    {card.value}
+                </div>
+                <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-widest">
+                    {card.sub}
+                </div>
             </div>
         </motion.div>
       ))}

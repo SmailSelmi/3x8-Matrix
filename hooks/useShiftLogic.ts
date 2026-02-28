@@ -1,175 +1,377 @@
 // hooks/useShiftLogic.ts
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { differenceInDays, addDays, subDays, startOfDay, differenceInMilliseconds } from 'date-fns';
+import { useMemo } from "react";
+import {
+  ShiftType,
+  SystemType,
+  INDUSTRIAL_3X8_PATTERN,
+} from "@/lib/shiftPatterns";
+import {
+  differenceInDays,
+  startOfDay,
+  addDays,
+  isSameDay,
+  format,
+} from "date-fns";
 
-// أنواع الدوام الممكنة
-export type ShiftType = 
-  | 'AFTERNOON'    // 13:00 -> 20:00
-  | 'DOUBLE'       // 07:00 -> 13:00 + 20:00 -> 07:00
-  | 'REST'         // راحة الـ 24 ساعة
-  | 'LEAVE';       // الإجازة الشهرية الطويلة
-
-export interface ShiftState {
+export interface ShiftInfo {
   type: ShiftType;
-  label: string;      // النص الذي سيظهر للمستخدم
-  color: string;      // لون الحالة
-  daysCompleted: number;
-  daysRemaining: number;
-  progress: number;
-  nextPhaseDate: Date;
-  cycleNumber: number;
-  //Countdown to midnight
-  hoursToMidnight: number;
-  minutesToMidnight: number;
-  secondsToMidnight: number;
-  daysPassed: number;
+  label: string;
+  emoji: string;
+  color: string;
+  accentColor: string;
+  startTime: string;
+  endTime: string;
+  cycleDay: number;
+  cycleProgress: number;
+  daysUntilNextShift: number;
+  nextShiftType: ShiftType;
+  nextShiftLabel: string;
+  returnToWorkDate: string;
+  returnToWorkShiftLabel: string;
+  hoursRemaining: number;
+  percentComplete: number;
+  isVacation: boolean;
+  vacationDay: number;
+  totalVacationDays: number;
+  superCycleProgress: number;
+  statusMessage: string;
+  subStatusMessage: string;
 }
 
-// Helper to parse "YYYY-MM-DD" safely as local date
-const parseLocalDate = (dateStr: string): Date => {
-  const [year, month, day] = dateStr.split('-').map(Number);
-  return new Date(year, month - 1, day, 0, 0, 0, 0);
+const SHIFT_METADATA: Record<
+  ShiftType,
+  { label: string; emoji: string; color: string; accentColor: string }
+> = {
+  day: {
+    label: "صباحي + ليلي",
+    emoji: "☀️",
+    color: "#F59E0B",
+    accentColor: "rgba(245, 158, 11, 0.1)",
+  },
+  evening: {
+    label: "مسائي",
+    emoji: "🌆",
+    color: "#F97316",
+    accentColor: "rgba(249, 115, 22, 0.1)",
+  },
+  night: {
+    label: "ليلي",
+    emoji: "🌙",
+    color: "#818CF8",
+    accentColor: "rgba(129, 140, 248, 0.1)",
+  },
+  rest: {
+    label: "راحة",
+    emoji: "🛡️",
+    color: "#10B981",
+    accentColor: "rgba(16, 185, 129, 0.1)",
+  },
+  leave: {
+    label: "إجازة",
+    emoji: "✈️",
+    color: "#64748B",
+    accentColor: "rgba(100, 116, 139, 0.1)",
+  },
 };
 
-export const useShiftLogic = (
-  inputDateStr: string,
-  workDays: number = 28,
-  leaveDays: number = 28,
-  mode: 'START_WORK' | 'START_LEAVE' = 'START_WORK',
-  startShiftOffset: number = 0,
-  targetDate?: Date | null
-) => {
-  const [now, setNow] = useState(new Date());
+/**
+ * Returns the primary shift type for a date (for calendar markers)
+ */
+export function getShiftForDate(
+  date: Date,
+  cycleStartDate: string,
+  systemType: SystemType,
+  initialCycleDay: number = 1,
+  workDuration: number = 28,
+  vacationDuration: number = 7,
+  addRouteDays: boolean = false,
+  annualLeaveBlocks: { id: string; start: string; end: string }[] = [],
+  workDurationExtension: number = 0,
+): ShiftType {
+  // Check Annual Leave Blocks first (Override)
+  const targetTime = date.getTime();
+  const isInAnnualLeave = annualLeaveBlocks.some((block) => {
+    const start = new Date(block.start).getTime();
+    const end = new Date(block.end).getTime();
+    return targetTime >= start && targetTime <= end;
+  });
 
-    const calculateShift = useCallback((currentTime: Date): ShiftState | null => {
-    // If a specific target date is requested, use it for shift calculation
-    // but keep 'now' for countdowns if needed (though countdowns make less sense for future dates)
-    const effectiveDate = targetDate || currentTime;
-    
-    if (!inputDateStr) return null;
+  if (isInAnnualLeave) return "leave";
 
-    const today = startOfDay(effectiveDate);
-    let startOfWorkCycle: Date;
+  const start = startOfDay(new Date(cycleStartDate));
+  const target = startOfDay(date);
+  const diff = differenceInDays(target, start);
 
-    // Anchor Date Logic: We anchor everything to the User's Selected Date
-    // If Mode is START_LEAVE, we calculate back to find the theoretic Start of Work
-    if (mode === 'START_LEAVE') {
-      const leaveStart = parseLocalDate(inputDateStr);
-      if (isNaN(leaveStart.getTime())) return null;
-      startOfWorkCycle = subDays(leaveStart, workDays);
-    } else {
-      startOfWorkCycle = parseLocalDate(inputDateStr);
-      if (isNaN(startOfWorkCycle.getTime())) return null;
-    }
-    
-    // 1. Calculate Absolute Days Passed
-    // This allows negative values (past) and positive values (future) to work on the same number line
-    const daysPassed = differenceInDays(today, startOfWorkCycle);
-    const cycleLength = workDays + leaveDays;
-    
-    // 2. Normalize to a Positive Cycle Index (0 to cycleLength - 1)
-    // The Formula: ((n % m) + m) % m handles negative numbers correctly in JS
-    const dayInCycle = ((daysPassed % cycleLength) + cycleLength) % cycleLength;
+  // Super cycle logic
+  const effectiveWorkDuration = workDuration + workDurationExtension;
+  const totalVacation = vacationDuration + (addRouteDays ? 2 : 0);
+  const totalCycle = effectiveWorkDuration + totalVacation;
+  const superPosition = ((diff % totalCycle) + totalCycle) % totalCycle;
 
-    // 3. Current Cycle Number (1-based count of full cycles passed)
-    // We use floor to count full cycles completed
-    const cycleNumber = Math.floor(daysPassed / cycleLength) + 1;
+  if (superPosition >= effectiveWorkDuration) {
+    return "leave";
+  }
 
-    let type: ShiftType;
-    let label: string;
-    let color: string;
-    let daysRemaining: number;
-    let nextPhaseDate: Date;
-    let daysCompleted: number;
+  if (systemType === "5x2_admin") {
+    const dayOfWeek = date.getDay(); // 0: Sun, 1: Mon, ..., 5: Fri, 6: Sat
+    // Sun-Thu work, Fri-Sat rest
+    return dayOfWeek === 5 || dayOfWeek === 6 ? "rest" : "day";
+  }
 
-    if (dayInCycle < workDays) {
-      // --- WORK PHASE ---
-      
-      // Absolute Math for Shift Pattern: (DayIndex + UserOffset) % 3
-      // We use dayInCycle (0 to 27) because the pattern restarts every cycle
-      const shiftPatternIndex = (dayInCycle + startShiftOffset) % 3;
-      
-      if (shiftPatternIndex === 0) {
-        type = 'AFTERNOON';
-        label = 'مساء (13-20) ⛅';
-        color = 'bg-orange-500';
-      } else if (shiftPatternIndex === 1) {
-        type = 'DOUBLE';
-        label = 'صباح + ليل';
-        color = 'bg-red-500';
-      } else {
-        type = 'REST';
-        label = 'يوم عطلة';
-        color = 'bg-blue-500';
+  // 3-Day Industrial Logic
+  const cycleLength = 3;
+  const position =
+    (((diff + (initialCycleDay - 1)) % cycleLength) + cycleLength) %
+    cycleLength;
+  return INDUSTRIAL_3X8_PATTERN[position];
+}
+
+export default function useShiftLogic(
+  cycleStartDate: string,
+  systemType: SystemType,
+  initialCycleDay: number = 1,
+  workDuration: number = 21,
+  vacationDuration: number = 7,
+  addRouteDays: boolean = false,
+  annualLeaveBlocks: { id: string; start: string; end: string }[] = [],
+  workDurationExtension: number = 0,
+  today: Date = new Date(),
+) {
+  return useMemo((): ShiftInfo => {
+    const start = startOfDay(new Date(cycleStartDate));
+    const dayStart = startOfDay(today);
+
+    // Annual Leave Check for today
+    const isInAnnualLeave = annualLeaveBlocks.some((block) => {
+      const bStart = new Date(block.start).getTime();
+      const bEnd = new Date(block.end).getTime();
+      const t = dayStart.getTime();
+      return t >= bStart && t <= bEnd;
+    });
+
+    const diff = differenceInDays(dayStart, start);
+
+    // Cycle info
+    const cycleLength = systemType === "3x8_industrial" ? 3 : 7;
+    const cycleDay =
+      systemType === "3x8_industrial"
+        ? ((((diff + (initialCycleDay - 1)) % 3) + 3) % 3) + 1
+        : dayStart.getDay() + 1;
+
+    // Super cycle info
+    const effectiveWorkDuration = workDuration + workDurationExtension;
+    const totalVacation = vacationDuration + (addRouteDays ? 2 : 0);
+    const totalCycle = effectiveWorkDuration + totalVacation;
+    const superPosition = ((diff % totalCycle) + totalCycle) % totalCycle;
+    const isVacation =
+      superPosition >= effectiveWorkDuration || isInAnnualLeave;
+    const vacationDay = isInAnnualLeave
+      ? 1
+      : superPosition >= effectiveWorkDuration
+        ? superPosition - effectiveWorkDuration + 1
+        : 0;
+
+    const baseType = getShiftForDate(
+      today,
+      cycleStartDate,
+      systemType,
+      initialCycleDay,
+      workDuration,
+      vacationDuration,
+      addRouteDays,
+      annualLeaveBlocks,
+      workDurationExtension,
+    );
+
+    // Time detection for 3x8 Industrial
+    const currentHour = today.getHours();
+    const currentMinute = today.getMinutes();
+    const currentMins = currentHour * 60 + currentMinute;
+    const dayProgress = currentMins / (24 * 60);
+
+    let activeType = baseType;
+    let startTime = "00:00";
+    let endTime = "23:59";
+
+    if (isVacation) {
+      activeType = "leave";
+      startTime = "00:00";
+      endTime = "23:59";
+    } else if (systemType === "3x8_industrial") {
+      if (cycleDay === 1) {
+        // Day 1: 13h - 20h
+        activeType = "evening";
+        startTime = "13:00";
+        endTime = "20:00";
+      } else if (cycleDay === 2) {
+        // Day 2: Morning (07-13) or Night (20-07)
+        if (currentHour < 13) {
+          activeType = "day";
+          startTime = "07:00";
+          endTime = "13:00";
+        } else {
+          activeType = "night";
+          startTime = "20:00";
+          endTime = "07:00";
+        }
+      } else if (cycleDay === 3) {
+        // Day 3: Rest from 07h
+        if (currentHour < 7) {
+          // Still in Day 2 night shift
+          activeType = "night";
+          startTime = "20:00";
+          endTime = "07:00";
+        } else {
+          activeType = "rest";
+          startTime = "07:00";
+          endTime = "13:00"; // Next rotation starts at 13:00 tomorrow
+        }
       }
-
-      daysRemaining = workDays - dayInCycle;
-      nextPhaseDate = addDays(today, daysRemaining);
-      daysCompleted = dayInCycle + 1;
-      
     } else {
-      // --- LEAVE PHASE ---
-      type = 'LEAVE';
-      label = 'إجازة شهرية 🏠';
-      color = 'bg-green-500';
-      
-      const daysInLeave = dayInCycle - workDays;
-      daysRemaining = leaveDays - daysInLeave;
-      nextPhaseDate = addDays(today, daysRemaining);
-      daysCompleted = daysInLeave + 1;
+      // 5x2 Admin
+      startTime = "08:00";
+      endTime = "16:30";
     }
 
-    // Countdown Logic (Unchanged)
-    const midnight = new Date(currentTime);
-    midnight.setHours(24, 0, 0, 0);
-    const msToMidnight = differenceInMilliseconds(midnight, currentTime);
-    const totalSecondsToMidnight = Math.floor(msToMidnight / 1000);
-    const hoursToMidnight = Math.floor(totalSecondsToMidnight / 3600);
-    const minutesToMidnight = Math.floor((totalSecondsToMidnight % 3600) / 60);
-    const secondsToMidnight = totalSecondsToMidnight % 60;
+    // Calculations
+    const [sh, sm] = startTime.split(":").map(Number);
+    let [eh, em] = endTime.split(":").map(Number);
+    let startTotalMins = sh * 60 + sm;
+    let endTotalMins = eh * 60 + em;
 
-    const currentPhaseLength = type === 'LEAVE' ? leaveDays : workDays;
+    if (endTotalMins <= startTotalMins) endTotalMins += 24 * 60;
+
+    let effCurrentMins = currentMins;
+    if (activeType === "night" && currentMins < 7 * 60)
+      effCurrentMins += 24 * 60;
+
+    let hoursRemaining = 0;
+    let percentComplete = 0;
+
+    if (activeType === "rest" || activeType === "leave") {
+      percentComplete = dayProgress * 100;
+      hoursRemaining = (24 * 60 - currentMins) / 60;
+    } else {
+      if (effCurrentMins < startTotalMins) {
+        hoursRemaining = (startTotalMins - effCurrentMins) / 60;
+        percentComplete = 0;
+      } else if (effCurrentMins >= endTotalMins) {
+        hoursRemaining = 0;
+        percentComplete = 100;
+      } else {
+        const duration = endTotalMins - startTotalMins;
+        percentComplete = ((effCurrentMins - startTotalMins) / duration) * 100;
+        hoursRemaining = (endTotalMins - effCurrentMins) / 60;
+      }
+    }
+
+    const meta = SHIFT_METADATA[activeType];
+    const tomorrow = addDays(today, 1);
+    const nextShiftType = getShiftForDate(
+      tomorrow,
+      cycleStartDate,
+      systemType,
+      initialCycleDay,
+      workDuration,
+      vacationDuration,
+      addRouteDays,
+      annualLeaveBlocks,
+      workDurationExtension,
+    );
+
+    let returnToWorkDate = "";
+    let returnToWorkShiftLabel = "";
+
+    if (isVacation) {
+      let checkDate = addDays(dayStart, 1);
+      // Limit to 60 days to avoid long loops
+      for (let i = 0; i < 60; i++) {
+        const type = getShiftForDate(
+          checkDate,
+          cycleStartDate,
+          systemType,
+          initialCycleDay,
+          workDuration,
+          vacationDuration,
+          addRouteDays,
+          annualLeaveBlocks,
+          workDurationExtension,
+        );
+        if (type !== "leave") {
+          returnToWorkDate = format(checkDate, "yyyy-MM-dd");
+          returnToWorkShiftLabel = SHIFT_METADATA[type].label;
+          break;
+        }
+        checkDate = addDays(checkDate, 1);
+      }
+    }
+
+    let statusMessage = "";
+    let subStatusMessage = "";
+
+    if (isVacation) {
+      statusMessage = "أنت في فترة إجازة";
+      subStatusMessage = `اليوم ${vacationDay} من ${totalVacation}`;
+    } else if (activeType === "rest") {
+      statusMessage = "أنت في فترة راحة حالياً";
+      subStatusMessage = "استمتع بوقتك بعيداً عن العمل";
+    } else if (effCurrentMins < startTotalMins) {
+      const h = Math.floor(hoursRemaining);
+      const m = Math.floor((hoursRemaining % 1) * 60);
+      statusMessage = `ستبدأ فترة العمل بعد ${h} ساعة و ${m} دقيقة`;
+      subStatusMessage = `فترة العمل القادمة: ${meta.label}`;
+    } else {
+      const h = Math.floor(hoursRemaining);
+      const m = Math.floor((hoursRemaining % 1) * 60);
+      const isExtensionDay = !isVacation && superPosition >= workDuration;
+
+      if (isExtensionDay) {
+        statusMessage =
+          h === 0 && m === 0
+            ? "فترة التمديد منتهية"
+            : `يتبقى ${h} ساعة و ${m} دقيقة في يوم التمديد`;
+        subStatusMessage = `يوم عمل إضافي (${Math.floor(superPosition - workDuration + 1)}) لزيادة الدورة`;
+      } else {
+        statusMessage =
+          h === 0 && m === 0
+            ? "فترة العمل منتهية"
+            : `يتبقى ${h} ساعة و ${m} دقيقة`;
+        subStatusMessage = `حتى نهاية فترة عمل ${meta.label}`;
+      }
+    }
 
     return {
-      type,
-      label,
-      color,
-      daysCompleted,
-      daysRemaining,
-      progress: (daysCompleted / currentPhaseLength) * 100,
-      nextPhaseDate,
-      cycleNumber,
-      hoursToMidnight,
-      minutesToMidnight,
-      secondsToMidnight,
-      daysPassed, // Expose raw days passed for stats
+      type: activeType,
+      ...meta,
+      startTime,
+      endTime,
+      cycleDay,
+      cycleProgress: isVacation ? 1 : dayProgress,
+      daysUntilNextShift: isVacation ? totalVacation - vacationDay + 1 : 1,
+      nextShiftType,
+      nextShiftLabel: SHIFT_METADATA[nextShiftType].label,
+      returnToWorkDate,
+      returnToWorkShiftLabel,
+      hoursRemaining: Math.max(0, hoursRemaining),
+      percentComplete,
+      isVacation,
+      vacationDay,
+      totalVacationDays: totalVacation,
+      superCycleProgress: superPosition / totalCycle,
+      statusMessage,
+      subStatusMessage,
     };
-  }, [inputDateStr, workDays, leaveDays, mode, startShiftOffset]);
-
-  useEffect(() => {
-    // Only run the live timer if we are viewing "Now" (no targetDate provided)
-    if (targetDate) return;
-
-    const timer = setInterval(() => {
-      setNow(new Date());
-    }, 1000);
-
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        setNow(new Date());
-      }
-    };
-    
-    document.addEventListener('visibilitychange', handleVisibility);
-
-    return () => {
-      clearInterval(timer);
-      document.removeEventListener('visibilitychange', handleVisibility);
-    };
-  }, [targetDate]);
-
-  return calculateShift(now);
-};
-
+  }, [
+    cycleStartDate,
+    systemType,
+    initialCycleDay,
+    workDuration,
+    vacationDuration,
+    addRouteDays,
+    today,
+    annualLeaveBlocks,
+    workDurationExtension,
+  ]);
+}
