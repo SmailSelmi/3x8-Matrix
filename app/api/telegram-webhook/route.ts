@@ -3,12 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 import webpush from "web-push";
 import { createClient } from "@supabase/supabase-js";
 
-// ─── VAPID config ─────────────────────────────────────────────────────────────
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT || "mailto:admin@example.com",
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!,
-);
+// ─── VAPID config is applied at request-time, not module-load-time ──────────
+// (Vercel build runs without env vars; calling setVapidDetails at module level
+//  causes "No key set vapidDetails.publicKey" during build.)
 
 // ─── Supabase server-side client (service role — bypasses RLS) ────────────────
 function getSupabaseAdmin() {
@@ -38,6 +35,13 @@ interface PushSubscriptionRow {
 // ─── POST handler ─────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
   try {
+    // Configure VAPID at request-time (env vars are available here at runtime)
+    webpush.setVapidDetails(
+      process.env.VAPID_SUBJECT || "mailto:admin@example.com",
+      process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+      process.env.VAPID_PRIVATE_KEY!,
+    );
+
     const body: TelegramUpdate = await req.json();
 
     const message = body?.message;
