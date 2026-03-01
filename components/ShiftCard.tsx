@@ -81,12 +81,23 @@ export default function ShiftCard({
       </div>
 
       <div className="flex flex-col gap-2">
+        {/* Primary time slot */}
         <div className="flex justify-between items-center text-[11px] font-mono font-bold text-slate-400">
           <span>{shiftInfo.startTime}</span>
+          <span className="text-slate-600 text-[9px]">───────</span>
           <span>{shiftInfo.endTime}</span>
         </div>
 
-        {isToday && (
+        {/* Secondary time slot — Day 2 full-day calendar view only */}
+        {shiftInfo.startTime2 && shiftInfo.endTime2 && (
+          <div className="flex justify-between items-center text-[11px] font-mono font-bold text-slate-400">
+            <span>{shiftInfo.startTime2}</span>
+            <span className="text-slate-600 text-[9px]">───────</span>
+            <span>{shiftInfo.endTime2}</span>
+          </div>
+        )}
+
+        {isToday && shiftInfo.type !== "rest" && (
           <div className="h-2 w-full bg-white/[0.05] rounded-full overflow-hidden">
             <motion.div
               initial={{ width: 0 }}

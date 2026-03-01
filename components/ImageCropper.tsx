@@ -1,10 +1,10 @@
 // components/ImageCropper.tsx
-'use client';
+"use client";
 
-import React, { useState, useCallback } from 'react';
-import Cropper, { Point, Area } from 'react-easy-crop';
-import { motion } from 'framer-motion';
-import { Check, X, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
+import React, { useState, useCallback } from "react";
+import Cropper, { Point, Area } from "react-easy-crop";
+import { motion } from "framer-motion";
+import { Check, X, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 
 interface ImageCropperProps {
   image: string;
@@ -12,7 +12,11 @@ interface ImageCropperProps {
   onCancel: () => void;
 }
 
-export default function ImageCropper({ image, onCropComplete, onCancel }: ImageCropperProps) {
+export default function ImageCropper({
+  image,
+  onCropComplete,
+  onCancel,
+}: ImageCropperProps) {
   const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
@@ -20,23 +24,29 @@ export default function ImageCropper({ image, onCropComplete, onCancel }: ImageC
   const onCropChange = (crop: Point) => setCrop(crop);
   const onZoomChange = (zoom: number) => setZoom(zoom);
 
-  const onCropCompleteInternal = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
-    setCroppedAreaPixels(croppedAreaPixels);
-  }, []);
+  const onCropCompleteInternal = useCallback(
+    (_croppedArea: Area, croppedAreaPixels: Area) => {
+      setCroppedAreaPixels(croppedAreaPixels);
+    },
+    [],
+  );
 
   const createImage = (url: string): Promise<HTMLImageElement> =>
     new Promise((resolve, reject) => {
       const image = new Image();
-      image.addEventListener('load', () => resolve(image));
-      image.addEventListener('error', (error) => reject(error));
-      image.setAttribute('crossOrigin', 'anonymous');
+      image.addEventListener("load", () => resolve(image));
+      image.addEventListener("error", (error) => reject(error));
+      image.setAttribute("crossOrigin", "anonymous");
       image.src = url;
     });
 
-  const getCroppedImg = async (imageSrc: string, pixelCrop: Area): Promise<string | null> => {
+  const getCroppedImg = async (
+    imageSrc: string,
+    pixelCrop: Area,
+  ): Promise<string | null> => {
     const image = await createImage(imageSrc);
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
 
     if (!ctx) return null;
 
@@ -52,10 +62,10 @@ export default function ImageCropper({ image, onCropComplete, onCancel }: ImageC
       0,
       0,
       pixelCrop.width,
-      pixelCrop.height
+      pixelCrop.height,
     );
 
-    return canvas.toDataURL('image/jpeg');
+    return canvas.toDataURL("image/jpeg");
   };
 
   const handleSave = async () => {
@@ -72,11 +82,14 @@ export default function ImageCropper({ image, onCropComplete, onCancel }: ImageC
   };
 
   return (
-    <div className="fixed inset-0 bg-black/95 z-[200] flex flex-col pt-safe px-4 pb-8" dir="rtl">
+    <div
+      className="fixed inset-0 bg-black/95 z-[200] flex flex-col pt-safe px-4 pb-8"
+      dir="rtl"
+    >
       {/* Header */}
       <div className="flex items-center justify-between py-6 px-2">
         <h3 className="text-xl font-black text-white italic">تعديل الصورة</h3>
-        <button 
+        <button
           onClick={onCancel}
           className="p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
         >

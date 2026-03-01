@@ -1,10 +1,10 @@
 // components/AnnouncementBanner.tsx
-'use client';
+"use client";
 
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Compass, X, CheckCircle2 } from 'lucide-react';
-import GlassCard from './GlassCard';
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Compass, X, CheckCircle2 } from "lucide-react";
+import GlassCard from "./GlassCard";
 
 interface AnnouncementBannerProps {
   onDismiss: () => void;
@@ -13,7 +13,12 @@ interface AnnouncementBannerProps {
   actionLabel?: string;
 }
 
-export default function AnnouncementBanner({ onDismiss, title, description, actionLabel = "حسناً، فهمت" }: AnnouncementBannerProps) {
+export default function AnnouncementBanner({
+  onDismiss,
+  title,
+  description,
+  actionLabel = "حسناً، فهمت",
+}: AnnouncementBannerProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: -20, scale: 0.95 }}
@@ -33,8 +38,10 @@ export default function AnnouncementBanner({ onDismiss, title, description, acti
 
           <div className="flex-1 flex flex-col gap-1">
             <div className="flex items-center justify-between">
-              <h4 className="text-sm font-black text-emerald-100 italic">{title}</h4>
-              <button 
+              <h4 className="text-sm font-black text-emerald-100 italic">
+                {title}
+              </h4>
+              <button
                 onClick={onDismiss}
                 className="p-1 text-slate-500 hover:text-white transition-colors"
                 aria-label="Dismiss"
@@ -45,7 +52,7 @@ export default function AnnouncementBanner({ onDismiss, title, description, acti
             <p className="text-[11px] font-bold text-slate-400 leading-relaxed ml-4">
               {description}
             </p>
-            
+
             <div className="flex justify-end mt-2">
               <button
                 onClick={onDismiss}

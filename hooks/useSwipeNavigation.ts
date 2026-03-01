@@ -1,7 +1,7 @@
 // hooks/useSwipeNavigation.ts
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 interface SwipeNavigationProps {
   onSwipeLeft?: () => void;
@@ -11,29 +11,29 @@ interface SwipeNavigationProps {
   enabled?: boolean;
 }
 
-export default function useSwipeNavigation({ 
-  onSwipeLeft, 
-  onSwipeRight, 
-  threshold = 50, 
-  bottomThreshold = 0.7, 
-  enabled = true 
+export default function useSwipeNavigation({
+  onSwipeLeft,
+  onSwipeRight,
+  threshold = 50,
+  bottomThreshold = 0.7,
+  enabled = true,
 }: SwipeNavigationProps) {
-  const touchStart = useRef<{ x: number, y: number } | null>(null);
-  const touchEnd = useRef<{ x: number, y: number } | null>(null);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const touchEnd = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     if (!enabled) return;
     const handleTouchStart = (e: TouchEvent) => {
       touchStart.current = {
         x: e.targetTouches[0].clientX,
-        y: e.targetTouches[0].clientY
+        y: e.targetTouches[0].clientY,
       };
     };
 
     const handleTouchMove = (e: TouchEvent) => {
       touchEnd.current = {
         x: e.targetTouches[0].clientX,
-        y: e.targetTouches[0].clientY
+        y: e.targetTouches[0].clientY,
       };
     };
 
@@ -42,7 +42,7 @@ export default function useSwipeNavigation({
 
       const windowHeight = window.innerHeight;
       const startY = touchStart.current.y;
-      
+
       // Only trigger if swipe starts in the bottom zone (e.g., bottom 30%)
       const isFromBottomZone = startY > windowHeight * bottomThreshold;
 
@@ -66,14 +66,14 @@ export default function useSwipeNavigation({
       touchEnd.current = null;
     };
 
-    window.addEventListener('touchstart', handleTouchStart);
-    window.addEventListener('touchmove', handleTouchMove);
-    window.addEventListener('touchend', handleTouchEnd);
+    window.addEventListener("touchstart", handleTouchStart);
+    window.addEventListener("touchmove", handleTouchMove);
+    window.addEventListener("touchend", handleTouchEnd);
 
     return () => {
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
     };
   }, [onSwipeLeft, onSwipeRight, threshold, bottomThreshold, enabled]);
 }

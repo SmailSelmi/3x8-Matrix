@@ -23,6 +23,8 @@ export interface ShiftInfo {
   accentColor: string;
   startTime: string;
   endTime: string;
+  startTime2?: string; // Day 2 second slot (calendar view only)
+  endTime2?: string;
   cycleDay: number;
   cycleProgress: number;
   daysUntilNextShift: number;
@@ -191,9 +193,17 @@ export default function useShiftLogic(
     const currentMins = currentHour * 60 + currentMinute;
     const dayProgress = currentMins / (24 * 60);
 
+    // Is the passed `today` actually today, or a calendar-selected date?
+    // Calendar selections are at midnight; we must NOT apply hour-based branching on them.
+    const realNow = new Date();
+    const isActualToday = isSameDay(today, realNow);
+
     let activeType = baseType;
     let startTime = "00:00";
     let endTime = "23:59";
+    // For Day 2 viewed as a full day (calendar), expose both slots
+    let startTime2 = "";
+    let endTime2 = "";
 
     if (isVacation) {
       activeType = "leave";
@@ -201,32 +211,40 @@ export default function useShiftLogic(
       endTime = "23:59";
     } else if (systemType === "3x8_industrial") {
       if (cycleDay === 1) {
-        // Day 1: 13h - 20h
         activeType = "evening";
         startTime = "13:00";
         endTime = "20:00";
       } else if (cycleDay === 2) {
-        // Day 2: Morning (07-13) or Night (20-07)
-        if (currentHour < 13) {
+        if (isActualToday) {
+          // Live view: pick sub-shift based on current hour
+          if (currentHour < 13) {
+            activeType = "day";
+            startTime = "07:00";
+            endTime = "13:00";
+          } else {
+            activeType = "night";
+            startTime = "20:00";
+            endTime = "07:00";
+          }
+        } else {
+          // Calendar view: show the full dual schedule
           activeType = "day";
           startTime = "07:00";
           endTime = "13:00";
-        } else {
-          activeType = "night";
-          startTime = "20:00";
-          endTime = "07:00";
+          startTime2 = "20:00";
+          endTime2 = "07:00";
         }
       } else if (cycleDay === 3) {
-        // Day 3: Rest from 07h
-        if (currentHour < 7) {
-          // Still in Day 2 night shift
+        if (isActualToday && currentHour < 7) {
+          // Live view only: still in Day 2 night shift before 07:00
           activeType = "night";
           startTime = "20:00";
           endTime = "07:00";
         } else {
+          // Calendar selection or after 07:00 — it's a rest day
           activeType = "rest";
           startTime = "07:00";
-          endTime = "13:00"; // Next rotation starts at 13:00 tomorrow
+          endTime = "13:00";
         }
       }
     } else {
@@ -347,6 +365,8 @@ export default function useShiftLogic(
       ...meta,
       startTime,
       endTime,
+      startTime2: startTime2 || undefined,
+      endTime2: endTime2 || undefined,
       cycleDay,
       cycleProgress: isVacation ? 1 : dayProgress,
       daysUntilNextShift: isVacation ? totalVacation - vacationDay + 1 : 1,

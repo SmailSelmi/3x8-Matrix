@@ -1,10 +1,10 @@
 // components/QuickStats.tsx
-'use client';
+"use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Zap, CheckCircle2, Bed, Target as TargetIcon } from 'lucide-react';
-import GlassCard from './GlassCard';
+import React from "react";
+import { motion } from "framer-motion";
+import { Zap, CheckCircle2, Bed, Target as TargetIcon } from "lucide-react";
+import GlassCard from "./GlassCard";
 
 interface QuickStatsProps {
   hoursThisMonth: number;
@@ -17,9 +17,8 @@ export default function QuickStats({
   hoursThisMonth,
   shiftsCompleted,
   restDaysRemaining,
-  completionPercent
+  completionPercent,
 }: QuickStatsProps) {
-  
   const stats = [
     {
       label: "ساعات الشهر",
@@ -27,7 +26,7 @@ export default function QuickStats({
       unit: "ساعة",
       icon: <Zap size={18} />,
       color: "text-amber-500",
-      delay: 0
+      delay: 0,
     },
     {
       label: "فترة عمل منجزة",
@@ -35,7 +34,7 @@ export default function QuickStats({
       unit: "",
       icon: <CheckCircle2 size={18} />,
       color: "text-indigo-500",
-      delay: 80
+      delay: 80,
     },
     {
       label: "راحة قادمة",
@@ -43,7 +42,7 @@ export default function QuickStats({
       unit: "أيام",
       icon: <Bed size={18} />,
       color: "text-blue-500",
-      delay: 160
+      delay: 160,
     },
     {
       label: "نسبة الإنجاز",
@@ -51,8 +50,8 @@ export default function QuickStats({
       unit: "%",
       icon: <TargetIcon size={18} />,
       color: "text-emerald-500",
-      delay: 240
-    }
+      delay: 240,
+    },
   ];
 
   return (
@@ -73,8 +72,12 @@ export default function QuickStats({
           </motion.div>
           <div className="flex flex-col">
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-black text-slate-100 font-mono">{stat.value}</span>
-              <span className="text-[10px] font-black text-slate-500">{stat.unit}</span>
+              <span className="text-2xl font-black text-slate-100 font-mono">
+                {stat.value}
+              </span>
+              <span className="text-[10px] font-black text-slate-500">
+                {stat.unit}
+              </span>
             </div>
             <span className="text-[10px] font-black uppercase text-slate-500 tracking-tighter mt-1">
               {stat.label}

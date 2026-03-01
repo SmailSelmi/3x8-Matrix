@@ -1,8 +1,8 @@
 // components/Footer.tsx
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 
 export default function Footer({ className }: { className?: string }) {
   const [time, setTime] = useState<string>("");
@@ -10,12 +10,12 @@ export default function Footer({ className }: { className?: string }) {
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      const timeString = now.toLocaleTimeString('fr-DZ', {
-        timeZone: 'Africa/Algiers',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
+      const timeString = now.toLocaleTimeString("fr-DZ", {
+        timeZone: "Africa/Algiers",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
       });
       setTime(timeString);
     };
@@ -38,27 +38,21 @@ export default function Footer({ className }: { className?: string }) {
         flex items-center justify-center gap-3 text-[10px] md:text-xs font-medium
         hover:border-blue-500/30 dark:hover:border-blue-400/30 transition-all duration-500
         z-50
-        ${className || ''}
+        ${className || ""}
       `}
     >
-      <span className="opacity-80">
-        © 2026 Trois Huit
-      </span>
-      
+      <span className="opacity-80">© 2026 Trois Huit</span>
+
       <div className="h-4 w-px bg-slate-200 dark:bg-white/10" />
-      
-      <span className="opacity-80 font-mono">
-        v1.0.0
-      </span>
+
+      <span className="opacity-80 font-mono">v1.0.0</span>
 
       <div className="h-4 w-px bg-slate-200 dark:bg-white/10" />
 
       <span className="font-mono font-bold text-slate-900 dark:text-white min-w-[8ch] text-center tabular-nums">
         {time || "--:--:--"}
       </span>
-      <span className="opacity-60 text-[9px] uppercase tracking-wider">
-        DZ
-      </span>
+      <span className="opacity-60 text-[9px] uppercase tracking-wider">DZ</span>
     </motion.footer>
   );
 }

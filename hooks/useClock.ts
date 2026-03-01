@@ -1,8 +1,8 @@
 // hooks/useClock.ts
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { formatArabicDate, getHijriDate } from '@/lib/dateUtils';
+import { useState, useEffect } from "react";
+import { formatArabicDate, getHijriDate } from "@/lib/dateUtils";
 
 export default function useClock() {
   const [now, setNow] = useState(new Date());
@@ -15,17 +15,17 @@ export default function useClock() {
     return () => clearInterval(timer);
   }, []);
 
-  const timeString = now.toLocaleTimeString('en-US', {
+  const timeString = now.toLocaleTimeString("en-US", {
     hour12: false,
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
   });
 
   return {
     now,
     timeString,
     dateStringArabic: formatArabicDate(now),
-    dateStringHijri: getHijriDate(now)
+    dateStringHijri: getHijriDate(now),
   };
 }
