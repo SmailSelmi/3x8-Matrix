@@ -3,9 +3,10 @@
 
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Bell, Share2, Settings, ChevronLeft } from "lucide-react";
+import { User, Bell, Share2, Settings, ChevronLeft, X } from "lucide-react";
 import { formatArabicDate, getHijriDate } from "@/lib/dateUtils";
 import { NavTab } from "./BottomNav";
+import { useInAppNotifications } from "@/hooks/useInAppNotifications";
 
 interface HeaderProps {
   userName: string;
@@ -22,6 +23,8 @@ export default function Header({
 }: HeaderProps) {
   const [showNotifications, setShowNotifications] = React.useState(false);
   const [showProfileMenu, setShowProfileMenu] = React.useState(false);
+  const { notifications, dismissNotification, isLoading } =
+    useInAppNotifications();
 
   const getGreeting = () => {
     const hour = currentTime.getHours();
@@ -186,13 +189,19 @@ export default function Header({
                 setShowProfileMenu(false);
                 setShowNotifications(!showNotifications);
               }}
-              className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all ${
+              className={`relative w-10 h-10 rounded-full border flex items-center justify-center transition-all ${
                 showNotifications
                   ? "bg-blue-600/20 border-blue-500 text-blue-400"
                   : "bg-white/[0.04] border-white/[0.08] text-slate-400"
               }`}
             >
               <Bell size={20} />
+              {/* Unread badge */}
+              {notifications.length > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-blue-500 rounded-full text-[9px] font-black text-white flex items-center justify-center shadow-lg shadow-blue-500/40">
+                  {notifications.length}
+                </span>
+              )}
             </motion.button>
 
             <AnimatePresence>
@@ -206,11 +215,58 @@ export default function Header({
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute left-0 mt-2 w-48 bg-[#0f172a] border border-white/10 rounded-2xl p-4 shadow-2xl z-50 text-center"
+                    className="absolute left-0 mt-2 w-72 bg-[#0a1628]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/40 z-50 overflow-hidden"
+                    dir="rtl"
                   >
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-relaxed">
-                      لا توجد إشعارات حالياً
-                    </p>
+                    {/* accent line */}
+                    <div className="h-px w-full bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
+
+                    <div className="p-3 flex flex-col gap-2">
+                      <span className="text-[9px] font-black text-slate-600 uppercase tracking-[0.25em] px-1">
+                        الإشعارات
+                      </span>
+
+                      {isLoading ? (
+                        <p className="text-[10px] font-bold text-slate-500 text-center py-3">
+                          ...
+                        </p>
+                      ) : notifications.length === 0 ? (
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest text-center py-3 leading-relaxed">
+                          لا توجد إشعارات حالياً
+                        </p>
+                      ) : (
+                        notifications.map((n) => (
+                          <div
+                            key={n.id}
+                            className="flex items-start gap-2 bg-white/[0.03] border border-white/[0.06] rounded-xl px-3 py-2.5"
+                          >
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[11px] font-bold text-slate-200 leading-relaxed break-words">
+                                {n.message}
+                              </p>
+                              <span className="text-[9px] font-bold text-slate-600 mt-0.5 block">
+                                {new Date(n.created_at).toLocaleDateString(
+                                  "ar-DZ",
+                                  {
+                                    day: "numeric",
+                                    month: "short",
+                                  },
+                                )}
+                              </span>
+                            </div>
+                            <button
+                              onClick={() => dismissNotification(n.id)}
+                              className="flex-shrink-0 p-0.5 rounded-lg text-slate-600 hover:text-slate-300 hover:bg-white/10 transition-all mt-0.5"
+                              title="إخفاء"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    <div className="h-px w-full bg-gradient-to-r from-transparent via-white/5 to-transparent" />
                   </motion.div>
                 </>
               )}
