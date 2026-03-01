@@ -18,7 +18,7 @@ import {
 import { arDZ } from "date-fns/locale";
 import { SystemType, ShiftType } from "@/lib/shiftPatterns";
 import { getShiftForDate } from "@/hooks/useShiftLogic";
-import { Sun, Moon, Coffee } from "lucide-react";
+import { Sun, Moon, Coffee, Plane } from "lucide-react";
 import { getHolidayForDate } from "@/lib/dateUtils";
 
 interface MonthGridProps {
@@ -40,7 +40,7 @@ const SHIFT_ICONS: Record<ShiftType, React.ReactNode> = {
   evening: <Sun size={10} className="text-purple-400" />,
   night: <Moon size={10} className="text-blue-400" />,
   rest: <Coffee size={10} className="text-slate-500" />,
-  leave: <Coffee size={10} className="text-green-500" />,
+  leave: <Plane size={10} className="text-emerald-400" />,
 };
 
 const SHIFT_LABELS: Record<ShiftType, string> = {

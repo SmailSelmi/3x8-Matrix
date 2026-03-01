@@ -38,7 +38,9 @@ export default function ShiftCard({
           <h3 className="text-xl font-black text-slate-100">
             {shiftInfo.isVacation
               ? "أنت الآن في فترة إجازة 🌴"
-              : `فترة عمل الـ ${shiftInfo.label}`}
+              : shiftInfo.type === "rest"
+                ? "أنت في يوم راحة 🛡️"
+                : `فترة ${shiftInfo.label}`}
           </h3>
         </div>
         <div className="flex items-center gap-2">
@@ -109,9 +111,7 @@ export default function ShiftCard({
           </span>
         </div>
         <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-          {shiftInfo.isVacation
-            ? `بعد ${shiftInfo.daysUntilNextShift} يوم`
-            : `بعد ${shiftInfo.daysUntilNextShift} يوم`}
+          {`بعد ${shiftInfo.daysUntilNextShift} يوم`}
         </div>
       </div>
     </GlassCard>

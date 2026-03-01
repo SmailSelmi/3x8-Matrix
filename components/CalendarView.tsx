@@ -10,6 +10,7 @@ import {
   Sun,
   Moon,
   Coffee,
+  Plane,
   Download,
   Loader2,
 } from "lucide-react";
@@ -43,7 +44,7 @@ const SHIFT_ICONS: Record<ShiftType, React.ReactNode> = {
   evening: <Sun size={12} className="text-purple-400" />,
   night: <Moon size={12} className="text-blue-400" />,
   rest: <Coffee size={12} className="text-slate-500" />,
-  leave: <Coffee size={12} className="text-green-500" />,
+  leave: <Plane size={12} className="text-emerald-400" />,
 };
 
 export default function CalendarView({
