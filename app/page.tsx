@@ -23,12 +23,10 @@ import BottomNav, { NavTab } from "@/components/BottomNav";
 import AnimatedBackground from "@/components/AnimatedBackground";
 import ShiftGauge from "@/components/ShiftGauge";
 import ShiftCard from "@/components/ShiftCard";
-import QuickStats from "@/components/QuickStats";
-import StatusBanner from "@/components/StatusBanner";
 import CalendarView from "@/components/CalendarView";
 import StatsView from "@/components/StatsView";
 import SettingsView from "@/components/SettingsView";
-import GlassCard from "@/components/GlassCard";
+import PersonalInfoView from "@/components/PersonalInfoView";
 import Onboarding from "@/components/Onboarding";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 import PushPermissionGate from "@/components/PushPermissionGate";
@@ -331,6 +329,21 @@ export default function AppShell() {
         return (
           <motion.div
             key="profile"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="flex-1 px-6 pb-28 pt-2 overflow-y-auto no-scrollbar"
+          >
+            <PersonalInfoView
+              settings={settings}
+              updateSettings={updateSettings}
+            />
+          </motion.div>
+        );
+      case "SETTINGS":
+        return (
+          <motion.div
+            key="settings"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}

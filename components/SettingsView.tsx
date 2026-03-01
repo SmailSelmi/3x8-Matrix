@@ -5,19 +5,13 @@ import React from "react";
 import { motion } from "framer-motion";
 import {
   Bell,
-  Languages,
   Moon,
-  User,
-  Briefcase,
-  Fingerprint,
   Zap,
   RotateCcw,
   Calendar,
   Layers,
-  Camera,
   Trash2,
   Check,
-  Edit2,
   PieChart,
   Settings as SettingsIcon,
   Plus,
@@ -27,9 +21,7 @@ import DatePickerAr from "./DatePickerAr";
 import { AppSettings } from "@/hooks/useAppSettings";
 import { SystemType } from "@/lib/shiftPatterns";
 import { format, addDays, differenceInDays } from "date-fns";
-import ImageCropper from "./ImageCropper";
 import BottomSheet from "./BottomSheet";
-import { useNotifications } from "@/hooks/useNotifications";
 
 interface SettingsViewProps {
   settings: AppSettings;
@@ -42,8 +34,6 @@ export default function SettingsView({
   updateSettings,
   resetSettings,
 }: SettingsViewProps) {
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const [imageToCrop, setImageToCrop] = React.useState<string | null>(null);
   const [showResetConfirm, setShowResetConfirm] = React.useState(false);
   const [showAddLeave, setShowAddLeave] = React.useState(false);
   const [newLeaveStart, setNewLeaveStart] = React.useState<Date>(new Date());
@@ -103,100 +93,8 @@ export default function SettingsView({
     });
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setImageToCrop(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-    // Reset input value so same file can be selected again
-    e.target.value = "";
-  };
-
   return (
     <div className="flex flex-col gap-6 max-w-2xl mx-auto pb-8" dir="rtl">
-      {/* Identity Header */}
-      <GlassCard className="p-6 flex flex-col items-center text-center gap-3 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
-
-        <div className="relative group">
-          <div className="w-24 h-24 rounded-full bg-blue-500/10 flex items-center justify-center text-3xl font-black text-blue-400 border border-blue-500/20 shadow-xl shadow-blue-500/5 overflow-hidden">
-            {settings.profileImage ? (
-              <img
-                src={settings.profileImage}
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              settings.userName.charAt(0) || "U"
-            )}
-          </div>
-
-          <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-sm"
-            >
-              <Camera size={20} />
-            </button>
-            {settings.profileImage && (
-              <button
-                onClick={() => updateSettings({ profileImage: null })}
-                className="p-2 bg-red-500/20 hover:bg-red-500/40 rounded-full text-red-400 backdrop-blur-sm mr-2"
-              >
-                <Trash2 size={20} />
-              </button>
-            )}
-          </div>
-          <input
-            type="file"
-            ref={fileInputRef}
-            className="hidden"
-            accept="image/*"
-            onChange={handleImageUpload}
-          />
-        </div>
-
-        <div>
-          <h2 className="text-xl font-black text-slate-100">
-            {settings.userName || "مستخدم جديد"}
-          </h2>
-        </div>
-      </GlassCard>
-
-      {/* Account Section */}
-      <section className="flex flex-col gap-3">
-        <div className="flex items-center gap-2 px-1">
-          <User size={14} className="text-indigo-400" />
-          <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
-            معلومات الحساب
-          </h3>
-        </div>
-        <GlassCard className="p-6">
-          <div className="flex flex-col gap-2">
-            <label className="text-[10px] font-black text-slate-500 uppercase ml-1">
-              اسم المستخدم
-            </label>
-            <div className="relative">
-              <User
-                size={14}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600"
-              />
-              <input
-                type="text"
-                placeholder="أدخل اسمك..."
-                value={settings.userName}
-                onChange={(e) => updateSettings({ userName: e.target.value })}
-                className="w-full bg-white/[0.02] border border-white/[0.05] rounded-xl pl-4 pr-10 py-3 text-sm text-slate-100 outline-none focus:border-blue-500 focus:bg-white/[0.04] transition-all"
-              />
-            </div>
-          </div>
-        </GlassCard>
-      </section>
-
       {/* Shift Config Section */}
       <section className="flex flex-col gap-3">
         <div className="flex items-center gap-2 px-1">
@@ -785,18 +683,6 @@ export default function SettingsView({
           By Smail Selmi
         </div>
       </div>
-
-      {/* Image Cropper Modal */}
-      {imageToCrop && (
-        <ImageCropper
-          image={imageToCrop}
-          onCropComplete={(cropped) => {
-            updateSettings({ profileImage: cropped });
-            setImageToCrop(null);
-          }}
-          onCancel={() => setImageToCrop(null)}
-        />
-      )}
 
       {/* Premium Reset Confirmation */}
       <BottomSheet

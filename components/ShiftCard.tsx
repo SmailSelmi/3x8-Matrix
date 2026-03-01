@@ -52,7 +52,6 @@ export default function ShiftCard({
               title="معايرة الجدول"
             >
               <Compass size={14} />
-              <span className="text-[10px] font-black uppercase">معايرة</span>
             </button>
           )}
 
@@ -70,7 +69,7 @@ export default function ShiftCard({
               title="تمديد فترة العمل"
             >
               <Plus size={14} />
-              <span className="text-[10px] font-black uppercase">تمديد</span>
+
               {extensionActive && (
                 <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 border-2 border-slate-950 rounded-full animate-bounce" />
               )}
