@@ -1,5 +1,5 @@
 // public/sw.js
-const CACHE_NAME = 'trois-huit-v3';
+const CACHE_NAME = 'trois-huit-v4';
 const PRE_CACHE = [
   '/',
   '/manifest.json',
@@ -10,7 +10,6 @@ const PRE_CACHE = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
-      // Use individual adds so a single 404 never aborts the whole SW install
       await Promise.allSettled(
         PRE_CACHE.map((url) => cache.add(url).catch((err) => {
           console.warn('[SW] Failed to cache:', url, err);
@@ -25,9 +24,8 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    )
+    ).then(() => self.clients.claim())  // claim all tabs immediately
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
@@ -37,47 +35,73 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// ─── Web Push: handle incoming push message from server ──────────────────────
+// ─── Web Push: handle incoming push — works even when app is closed ───────────
 self.addEventListener('push', (event) => {
-  let data = { title: 'Trois Huit', body: 'لديك إشعار جديد.' };
+  // Default fallback data
+  let title = 'Trois Huit | 3×8';
+  let body  = 'لديك رسالة جديدة.';
 
+  // Parse payload sent from the webhook
   if (event.data) {
     try {
-      data = event.data.json();
+      const parsed = event.data.json();
+      if (parsed.title) title = parsed.title;
+      if (parsed.body)  body  = parsed.body;
     } catch {
-      data.body = event.data.text();
+      body = event.data.text();
     }
   }
 
   const options = {
-    body: data.body,
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/icon-192x192.png',
-    vibrate: [200, 100, 200],
-    tag: 'broadcast',
-    renotify: true,
-    dir: 'rtl',
+    // ── Content ──────────────────────────────────────────────────────────────
+    body,
+    // Truncate long messages cleanly (OS wraps at ~2 lines anyway)
+    // ── Visuals ──────────────────────────────────────────────────────────────
+    icon:  '/icons/icon-192x192.png',   // large icon shown in notification
+    badge: '/icons/icon-192x192.png',   // small monochrome icon in status bar
+    // ── Behaviour ────────────────────────────────────────────────────────────
+    tag:              'trois-huit-broadcast',  // replaces previous unread notification
+    renotify:         true,                    // always buzz even if replacing
+    requireInteraction: false,                 // auto-dismiss after a few seconds
+    silent:           false,                   // play default system sound
+    vibrate:          [100, 50, 100],          // short double pulse
+    // ── RTL / locale ─────────────────────────────────────────────────────────
+    dir:  'rtl',
     lang: 'ar',
+    // ── Tap action ───────────────────────────────────────────────────────────
+    data: { url: '/' },
+    // ── Quick actions ────────────────────────────────────────────────────────
+    actions: [
+      { action: 'open', title: 'فتح التطبيق' },
+      { action: 'close', title: 'إغلاق' },
+    ],
   };
 
+  // waitUntil keeps the SW alive until showNotification resolves —
+  // this guarantees delivery whether the app is open, in background, or closed.
   event.waitUntil(
-    self.registration.showNotification(data.title, options)
+    self.registration.showNotification(title, options)
   );
 });
 
-// ─── Notification click: focus or open the app ───────────────────────────────
+// ─── Notification tap: focus the app or open it ───────────────────────────────
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+
+  if (event.action === 'close') return;
+
+  const targetUrl = event.notification.data?.url || '/';
+
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if ('focus' in client) return client.focus();
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      // If a window is already open, focus it
+      for (const client of list) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          return client.focus();
+        }
       }
-      return clients.openWindow('/');
+      // Otherwise open a new tab
+      return clients.openWindow(targetUrl);
     })
   );
-});
-
-self.addEventListener('notificationclose', (_event) => {
-  // Handle notification close if needed
 });
