@@ -37,9 +37,13 @@ export default function ShiftCard({
           </span>
           <h3 className="text-xl font-black text-slate-100">
             {shiftInfo.isVacation
-              ? "أنت الآن في فترة إجازة 🌴"
+              ? isToday
+                ? "أنت الآن في فترة إجازة 🌴"
+                : "يوم إجازة 🌴"
               : shiftInfo.type === "rest"
-                ? "أنت في يوم راحة 🛡️"
+                ? isToday
+                  ? "أنت في يوم راحة 🛡️"
+                  : "يوم راحة 🛡️"
                 : `فترة ${shiftInfo.label}`}
           </h3>
         </div>
@@ -81,23 +85,28 @@ export default function ShiftCard({
       </div>
 
       <div className="flex flex-col gap-2">
-        {/* Primary time slot */}
-        <div className="flex justify-between items-center text-[11px] font-mono font-bold text-slate-400">
-          <span>{shiftInfo.startTime}</span>
-          <span className="text-slate-600 text-[9px]">───────</span>
-          <span>{shiftInfo.endTime}</span>
-        </div>
+        {/* Only show time slots for working days */}
+        {shiftInfo.type !== "rest" && shiftInfo.type !== "leave" && (
+          <>
+            {/* Primary time slot */}
+            <div className="flex justify-between items-center text-[11px] font-mono font-bold text-slate-400">
+              <span>{shiftInfo.startTime}</span>
+              <span className="text-slate-600 text-[9px]">───────</span>
+              <span>{shiftInfo.endTime}</span>
+            </div>
 
-        {/* Secondary time slot — Day 2 full-day calendar view only */}
-        {shiftInfo.startTime2 && shiftInfo.endTime2 && (
-          <div className="flex justify-between items-center text-[11px] font-mono font-bold text-slate-400">
-            <span>{shiftInfo.startTime2}</span>
-            <span className="text-slate-600 text-[9px]">───────</span>
-            <span>{shiftInfo.endTime2}</span>
-          </div>
+            {/* Secondary time slot — Day 2 full-day calendar view only */}
+            {shiftInfo.startTime2 && shiftInfo.endTime2 && (
+              <div className="flex justify-between items-center text-[11px] font-mono font-bold text-slate-400">
+                <span>{shiftInfo.startTime2}</span>
+                <span className="text-slate-600 text-[9px]">───────</span>
+                <span>{shiftInfo.endTime2}</span>
+              </div>
+            )}
+          </>
         )}
 
-        {isToday && shiftInfo.type !== "rest" && (
+        {isToday && shiftInfo.type !== "rest" && shiftInfo.type !== "leave" && (
           <div className="h-2 w-full bg-white/[0.05] rounded-full overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
