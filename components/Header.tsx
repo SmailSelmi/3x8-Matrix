@@ -93,29 +93,6 @@ export default function Header({
                         المعلومات الشخصية
                       </span>
 
-                      {/* Identity row */}
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 overflow-hidden flex-shrink-0">
-                          {profileImage ? (
-                            <img
-                              src={profileImage}
-                              alt="Profile"
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <User size={22} />
-                          )}
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                          <span className="text-sm font-black text-slate-100 truncate">
-                            {userName || "زميل العمل"}
-                          </span>
-                          <span className="text-[10px] font-bold text-slate-500">
-                            {getGreeting()}
-                          </span>
-                        </div>
-                      </div>
-
                       {/* View Profile button */}
                       <button
                         onClick={() => handleNavigate("PROFILE")}

@@ -36,7 +36,7 @@ interface MonthGridProps {
 }
 
 const SHIFT_ICONS: Record<ShiftType, React.ReactNode> = {
-  day: <Sun size={10} className="text-orange-400" />,
+  day: <Moon size={10} className="text-amber-400" />,
   evening: <Sun size={10} className="text-purple-400" />,
   night: <Moon size={10} className="text-blue-400" />,
   rest: <Coffee size={10} className="text-slate-500" />,
