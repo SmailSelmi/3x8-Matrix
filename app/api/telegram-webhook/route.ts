@@ -153,6 +153,15 @@ export async function POST(req: NextRequest) {
         ? `🗑 محذوف (منتهي الصلاحية): ${staleIds.length}`
         : "");
 
+    // ── Store broadcast in-app + clean up old ones (parallel, non-blocking) ──
+    const sevenDaysAgo = new Date(
+      Date.now() - 7 * 24 * 60 * 60 * 1000,
+    ).toISOString();
+    await Promise.allSettled([
+      supabase.from("broadcasts").insert({ message: broadcastMessage }),
+      supabase.from("broadcasts").delete().lt("created_at", sevenDaysAgo),
+    ]);
+
     await sendTelegramMessage(chatId, report);
 
     return NextResponse.json({ ok: true });
