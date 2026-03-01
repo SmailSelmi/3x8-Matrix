@@ -43,23 +43,18 @@ export async function POST(req: NextRequest) {
     );
 
     const body: TelegramUpdate = await req.json();
-
     const message = body?.message;
-    if (!message) {
-      // Telegram sometimes sends non-message updates (e.g., edited messages).
-      // Always return 200 so Telegram doesn't retry.
-      return NextResponse.json({ ok: true });
-    }
+
+    // Telegram sends non-message updates (edited messages, etc.) — always 200
+    if (!message) return NextResponse.json({ ok: true });
 
     const chatId = String(message.chat.id);
     const adminChatId = process.env.ADMIN_CHAT_ID;
 
-    // ── Security: reject anyone who isn't you ──────────────────────────────────
+    // ── Security: reject anyone who isn't the admin ────────────────────────────
     if (chatId !== adminChatId) {
-      console.warn(
-        `[webhook] Unauthorized access attempt from chat_id: ${chatId}`,
-      );
-      return NextResponse.json({ ok: true }); // 200 always so Telegram is satisfied
+      console.warn(`[webhook] Unauthorized chat_id: ${chatId}`);
+      return NextResponse.json({ ok: true });
     }
 
     const text = message.text?.trim() ?? "";
@@ -82,14 +77,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    // ── Fetch all subscriptions ──────────────────────────────────────────────
     const supabase = getSupabaseAdmin();
+    const sevenDaysAgo = new Date(
+      Date.now() - 7 * 24 * 60 * 60 * 1000,
+    ).toISOString();
+
+    // ── STEP 1: Save broadcast to DB (always, independent of push) ────────────
+    const { error: insertError } = await supabase
+      .from("broadcasts")
+      .insert({ message: broadcastMessage });
+    if (insertError) {
+      console.error("[webhook] broadcasts insert error:", insertError);
+    }
+
+    // ── STEP 2: Clean broadcasts older than 7 days ────────────────────────────
+    await supabase.from("broadcasts").delete().lt("created_at", sevenDaysAgo);
+
+    // ── STEP 3: Fetch push subscriptions ─────────────────────────────────────
     const { data: subscriptions, error: fetchError } = await supabase
       .from("push_subscriptions")
       .select("id, endpoint, p256dh, auth");
 
     if (fetchError) {
-      console.error("[webhook] Supabase fetch error:", fetchError);
+      console.error("[webhook] push_subscriptions fetch error:", fetchError);
       await sendTelegramMessage(
         chatId,
         `❌ خطأ في جلب المشتركين: ${fetchError.message}`,
@@ -103,7 +113,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    // ── Dispatch pushes in parallel ───────────────────────────────────────────
+    // ── STEP 4: Dispatch web push to all subscribers ──────────────────────────
     const payload = JSON.stringify({
       title: "Trois Huit | 3×8",
       body: broadcastMessage,
@@ -125,7 +135,6 @@ export async function POST(req: NextRequest) {
           );
           successCount++;
         } catch (err: unknown) {
-          // HTTP 410 Gone = subscription is no longer valid, clean it up
           const status = (err as { statusCode?: number })?.statusCode;
           if (status === 410 || status === 404) {
             staleIds.push(row.id);
@@ -137,13 +146,13 @@ export async function POST(req: NextRequest) {
       }),
     );
 
-    // ── Clean up stale subscriptions ──────────────────────────────────────────
+    // ── STEP 5: Clean up stale subscriptions ─────────────────────────────────
     if (staleIds.length > 0) {
       await supabase.from("push_subscriptions").delete().in("id", staleIds);
       console.log(`[webhook] Removed ${staleIds.length} stale subscriptions.`);
     }
 
-    // ── Report back to Telegram ───────────────────────────────────────────────
+    // ── STEP 6: Report back to Telegram ──────────────────────────────────────
     const report =
       `✅ تم الإرسال!\n` +
       `👥 المشتركون: ${rows.length}\n` +
@@ -153,21 +162,11 @@ export async function POST(req: NextRequest) {
         ? `🗑 محذوف (منتهي الصلاحية): ${staleIds.length}`
         : "");
 
-    // ── Store broadcast in-app + clean up old ones (parallel, non-blocking) ──
-    const sevenDaysAgo = new Date(
-      Date.now() - 7 * 24 * 60 * 60 * 1000,
-    ).toISOString();
-    await Promise.allSettled([
-      supabase.from("broadcasts").insert({ message: broadcastMessage }),
-      supabase.from("broadcasts").delete().lt("created_at", sevenDaysAgo),
-    ]);
-
     await sendTelegramMessage(chatId, report);
 
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("[webhook] Unhandled error:", err);
-    // Return 200 so Telegram doesn't retry the webhook endlessly
     return NextResponse.json({ ok: true });
   }
 }
