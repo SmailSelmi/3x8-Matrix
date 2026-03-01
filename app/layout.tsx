@@ -51,6 +51,24 @@ export default function RootLayout({
       <body
         className={`${tajawal.variable} ${jetbrainsMono.variable} antialiased selection:bg-blue-500/30 select-none bg-[#020617] text-[#f8fafc]`}
       >
+        {/* Google Analytics */}
+        <Script
+          strategy="afterInteractive"
+          src={`https://www.googletagmanager.com/gtag/js?id=G-6B4HMT8E9K`}
+        />
+        <Script
+          id="gtag-init"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-6B4HMT8E9K');
+            `,
+          }}
+        />
+
         {/* Microsoft Clarity Analytics */}
         <Script
           id="ms-clarity"
