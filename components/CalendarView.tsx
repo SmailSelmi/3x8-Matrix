@@ -9,7 +9,6 @@ import {
   StretchHorizontal,
   Sun,
   Moon,
-  SunMoon,
   Coffee,
   Download,
   Loader2,
@@ -40,7 +39,7 @@ interface CalendarViewProps {
 }
 
 const SHIFT_ICONS: Record<ShiftType, React.ReactNode> = {
-  day: <SunMoon size={12} className="text-amber-400" />,
+  day: <Moon size={12} className="text-amber-400" />,
   evening: <Sun size={12} className="text-purple-400" />,
   night: <Moon size={12} className="text-blue-400" />,
   rest: <Coffee size={12} className="text-slate-500" />,
