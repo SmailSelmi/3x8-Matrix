@@ -229,7 +229,7 @@ export default function SettingsView({
                     workDuration: val === "" ? 0 : parseInt(val),
                   });
                 }}
-                className="w-full bg-white/[0.02] border border-white/[0.05] rounded-xl px-4 py-3 text-sm text-slate-100 outline-none focus:border-blue-500 focus:bg-white/[0.04] transition-all"
+                className="w-full bg-[#0f172a] border border-white/5 rounded-xl px-4 py-3 text-sm font-bold text-slate-100 outline-none focus:border-blue-500/50 focus:bg-blue-500/5 focus:shadow-[0_0_15px_rgba(59,130,246,0.1)] transition-all text-center"
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -245,7 +245,7 @@ export default function SettingsView({
                     vacationDuration: val === "" ? 0 : parseInt(val),
                   });
                 }}
-                className="w-full bg-white/[0.02] border border-white/[0.05] rounded-xl px-4 py-3 text-sm text-slate-100 outline-none focus:border-blue-500 focus:bg-white/[0.04] transition-all"
+                className="w-full bg-[#0f172a] border border-white/5 rounded-xl px-4 py-3 text-sm font-bold text-slate-100 outline-none focus:border-blue-500/50 focus:bg-blue-500/5 focus:shadow-[0_0_15px_rgba(59,130,246,0.1)] transition-all text-center"
               />
             </div>
           </div>
@@ -840,7 +840,7 @@ export default function SettingsView({
               value={tempPool || ""}
               onChange={(e) => setTempPool(parseInt(e.target.value) || 0)}
               placeholder="افتراضي: 30"
-              className="w-full bg-white/[0.02] border border-white/[0.05] rounded-xl px-4 py-3 text-sm text-slate-100 outline-none focus:border-blue-500 focus:bg-white/[0.04] transition-all"
+              className="w-full bg-[#0f172a] border border-white/5 rounded-xl px-4 py-3 text-sm font-bold text-slate-100 outline-none focus:border-blue-500/50 focus:bg-blue-500/5 focus:shadow-[0_0_15px_rgba(59,130,246,0.1)] transition-all"
             />
             <p className="text-[9px] font-bold text-slate-600 mr-1">
               أدخل إجمالي أيام الإجازة السنوية الممنوحة لك (مثلاً: 30 أو 45)

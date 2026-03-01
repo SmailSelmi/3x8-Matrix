@@ -52,7 +52,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           type="text"
           autoFocus
           placeholder="أدخل اسمك هنا..."
-          className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl px-6 py-4 text-xl font-black text-center outline-none focus:border-blue-500 transition-all font-Tajawal"
+          className="w-full bg-[#0f172a] border border-white/5 rounded-2xl px-6 py-4 text-xl font-black text-center text-slate-100 outline-none focus:border-blue-500/50 focus:bg-blue-500/5 focus:shadow-[0_0_15px_rgba(59,130,246,0.1)] transition-all font-Tajawal"
           value={formData.userName}
           onChange={(e) =>
             setFormData({ ...formData, userName: e.target.value })
@@ -188,7 +188,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                     workDuration: parseInt(e.target.value) || 28,
                   })
                 }
-                className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl px-4 py-3 text-lg font-black text-center text-white outline-none focus:border-blue-500 transition-all font-Tajawal"
+                className="w-full bg-[#0f172a] border border-white/5 rounded-xl px-4 py-3 text-lg font-black text-center text-slate-100 outline-none focus:border-blue-500/50 focus:bg-blue-500/5 focus:shadow-[0_0_15px_rgba(59,130,246,0.1)] transition-all font-Tajawal"
               />
             </div>
             <div className="flex-1 flex flex-col gap-2 text-center">
@@ -204,7 +204,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                     vacationDuration: parseInt(e.target.value) || 7,
                   })
                 }
-                className="w-full bg-white/[0.04] border border-white/[0.1] rounded-2xl px-4 py-3 text-lg font-black text-center text-white outline-none focus:border-blue-500 transition-all font-Tajawal"
+                className="w-full bg-[#0f172a] border border-white/5 rounded-xl px-4 py-3 text-lg font-black text-center text-slate-100 outline-none focus:border-blue-500/50 focus:bg-blue-500/5 focus:shadow-[0_0_15px_rgba(59,130,246,0.1)] transition-all font-Tajawal"
               />
             </div>
           </div>

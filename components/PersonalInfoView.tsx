@@ -53,24 +53,24 @@ export default function PersonalInfoView({
           صورة الملف الشخصي
         </span>
 
-        <div className="relative group">
-          <div className="w-28 h-28 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 overflow-hidden shadow-xl shadow-blue-500/5">
+        <div className="relative group w-28 h-28">
+          <div className="w-full h-full rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 overflow-hidden shadow-xl shadow-blue-500/5 relative">
             {settings.profileImage ? (
               <img
                 src={settings.profileImage}
                 alt="Profile"
-                className="w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover"
               />
             ) : (
-              <User size={48} />
+              <User size={48} className="absolute" />
             )}
           </div>
 
-          {/* Hover overlay */}
-          <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+          {/* Hover overlay (desktop) & tap overlay (mobile) */}
+          <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-full z-10">
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-sm"
+              className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-sm transition-all active:scale-95"
               title="تغيير الصورة"
             >
               <Camera size={18} />
@@ -78,7 +78,7 @@ export default function PersonalInfoView({
             {settings.profileImage && (
               <button
                 onClick={() => updateSettings({ profileImage: null })}
-                className="p-2 bg-red-500/20 hover:bg-red-500/40 rounded-full text-red-400 backdrop-blur-sm"
+                className="p-2 bg-red-500/20 hover:bg-red-500/40 rounded-full text-red-400 backdrop-blur-sm transition-all active:scale-95"
                 title="حذف الصورة"
               >
                 <Trash2 size={18} />
@@ -97,7 +97,7 @@ export default function PersonalInfoView({
 
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="px-5 py-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-black hover:bg-blue-500/20 transition-all"
+          className="px-5 py-2.5 mt-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-black hover:bg-blue-500/20 active:scale-95 transition-all shadow-lg shadow-blue-500/5"
         >
           {settings.profileImage ? "تغيير الصورة" : "رفع صورة"}
         </button>
@@ -118,7 +118,7 @@ export default function PersonalInfoView({
             placeholder="أدخل اسمك..."
             value={settings.userName}
             onChange={(e) => updateSettings({ userName: e.target.value })}
-            className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl pl-4 pr-10 py-3.5 text-sm text-slate-100 outline-none focus:border-blue-500/50 focus:bg-white/[0.04] transition-all"
+            className="w-full bg-[#0f172a] border border-white/5 rounded-xl pl-4 pr-11 py-3.5 text-sm font-bold text-slate-100 outline-none focus:border-blue-500/50 focus:bg-blue-500/5 focus:shadow-[0_0_15px_rgba(59,130,246,0.1)] transition-all"
           />
         </div>
         <p className="text-[9px] font-bold text-slate-600 mr-1">
