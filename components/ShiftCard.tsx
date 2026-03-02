@@ -7,6 +7,7 @@ import GlassCard from "./GlassCard";
 import { Compass, Plus } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { arDZ } from "date-fns/locale";
+import { formatShiftLabel } from "@/lib/dateUtils";
 
 interface ShiftCardProps {
   shiftInfo: ShiftInfo;
@@ -46,7 +47,7 @@ export default function ShiftCard({
                 ? isToday
                   ? "في راحة الآن"
                   : "يوم راحة"
-                : `فترة ${shiftInfo.label}`}
+                : formatShiftLabel(shiftInfo.label)}
           </h3>
         </div>
         <div className="flex items-center gap-2">
@@ -128,8 +129,8 @@ export default function ShiftCard({
           </span>
           <span className="text-[11px] font-black text-slate-300">
             {shiftInfo.isVacation
-              ? `${format(parseISO(shiftInfo.returnToWorkDate), "dd/MM/yy")} (${shiftInfo.returnToWorkShiftLabel})`
-              : shiftInfo.nextShiftLabel}
+              ? `${format(parseISO(shiftInfo.returnToWorkDate), "dd/MM/yy")} (${formatShiftLabel(shiftInfo.returnToWorkShiftLabel)})`
+              : formatShiftLabel(shiftInfo.nextShiftLabel)}
           </span>
         </div>
         <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">

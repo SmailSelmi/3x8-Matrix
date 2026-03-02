@@ -98,12 +98,12 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           {[
             {
               id: 1,
-              label: "اليوم الأول: مسائي (13-20)",
+              label: "اليوم الأول: فترة عمل مسائية",
               desc: "13:00 - 20:00",
             },
             {
               id: 2,
-              label: "اليوم الثاني: صباحي+ليلي",
+              label: "اليوم الثاني: فترة عمل صباح + ليل",
               desc: "07h-13h / 20h-07h",
             },
             { id: 3, label: "اليوم الثالث: راحة", desc: "ابتداءً من 07:00" },

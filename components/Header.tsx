@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import { User, Share2, Settings } from "lucide-react";
+import { User, Share2, Settings, ChevronRight } from "lucide-react";
 import { getHijriDate } from "@/lib/dateUtils";
 import { NavTab } from "./BottomNav";
 import NotificationMenu from "./NotificationMenu";
@@ -11,6 +11,7 @@ interface HeaderProps {
   userName: string;
   profileImage?: string | null;
   currentTime: Date;
+  activeTab: NavTab;
   onNavigate: (tab: NavTab) => void;
 }
 
@@ -18,6 +19,7 @@ export default function Header({
   userName,
   profileImage,
   currentTime,
+  activeTab,
   onNavigate,
 }: HeaderProps) {
   const getGreeting = () => {
@@ -37,6 +39,15 @@ export default function Header({
       <div className="flex justify-between items-center">
         {/* User Identity */}
         <div className="flex items-center gap-3">
+          {activeTab !== "HOME" && (
+            <button
+              onClick={() => handleNavigate("HOME")}
+              className="p-2 -mr-2 rounded-full hover:bg-white/10 text-slate-300 transition-all active:scale-95"
+              aria-label="رجوع"
+            >
+              <ChevronRight size={24} />
+            </button>
+          )}
           {/* Profile Button + Dropdown */}
           <div className="relative">
             <button

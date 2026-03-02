@@ -49,19 +49,22 @@ export default function BottomSheet({
         <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto my-4" />
 
         <div className="px-6 pb-8">
-          {title && (
-            <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-6">
+            {title ? (
               <h3 className="text-xl font-black text-slate-100 italic">
                 {title}
               </h3>
-              <button
-                onClick={onClose}
-                className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-slate-400 transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
-          )}
+            ) : (
+              <div />
+            )}
+            <button
+              onClick={onClose}
+              className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-slate-400 transition-colors"
+              aria-label="إغلاق"
+            >
+              <X size={20} />
+            </button>
+          </div>
           {children}
         </div>
       </div>

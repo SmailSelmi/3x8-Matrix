@@ -20,9 +20,14 @@ interface ProfileViewProps {
     daysRemaining: number;
     type: string;
   };
+  onClose?: () => void;
 }
 
-export default function ProfileView({ settings, shiftData }: ProfileViewProps) {
+export default function ProfileView({
+  settings,
+  shiftData,
+  onClose,
+}: ProfileViewProps) {
   // Stats Calculation Helpers
   const totalWorkDays = settings.systemType === "3x8_industrial" ? 30 : 22;
   const progress = Math.min(100, (shiftData.daysPassed / totalWorkDays) * 100);
@@ -133,6 +138,18 @@ export default function ProfileView({ settings, shiftData }: ProfileViewProps) {
           </p>
         </div>
       </div>
+
+      {/* Save and Close Button */}
+      {onClose && (
+        <div className="px-2 pb-4">
+          <button
+            onClick={onClose}
+            className="w-full bg-blue-600 text-white font-black rounded-2xl py-4 flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-blue-500/20"
+          >
+            رجوع
+          </button>
+        </div>
+      )}
     </div>
   );
 }

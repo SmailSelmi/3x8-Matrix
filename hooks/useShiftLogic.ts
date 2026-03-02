@@ -48,19 +48,19 @@ const SHIFT_METADATA: Record<
   { label: string; emoji: string; color: string; accentColor: string }
 > = {
   day: {
-    label: "صباحي + ليلي",
+    label: "صباح + ليل",
     emoji: "☀️",
     color: "#F59E0B",
     accentColor: "rgba(245, 158, 11, 0.1)",
   },
   evening: {
-    label: "مسائي",
+    label: "عمل مسائية",
     emoji: "🌆",
     color: "#F97316",
     accentColor: "rgba(249, 115, 22, 0.1)",
   },
   night: {
-    label: "ليلي",
+    label: "ليلية",
     emoji: "🌙",
     color: "#818CF8",
     accentColor: "rgba(129, 140, 248, 0.1)",

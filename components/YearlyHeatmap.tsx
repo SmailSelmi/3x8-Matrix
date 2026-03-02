@@ -9,6 +9,7 @@ import {
   getDay,
 } from "date-fns";
 import { arDZ } from "date-fns/locale";
+import { formatShiftLabel } from "@/lib/dateUtils";
 
 interface YearlyHeatmapProps {
   year: number;
@@ -58,13 +59,16 @@ export default function YearlyHeatmap({
           </h3>
           <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest opacity-60">
             <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-orange-400" /> مسائي
+              <div className="w-2 h-2 rounded-full bg-orange-400" />{" "}
+              {formatShiftLabel("عمل مسائية")}
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-red-500" /> صباحي
+              <div className="w-2 h-2 rounded-full bg-red-500" />{" "}
+              {formatShiftLabel("صباح + ليل")}
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-blue-400" /> راحة
+              <div className="w-2 h-2 rounded-full bg-blue-400" />{" "}
+              {formatShiftLabel("راحة")}
             </div>
           </div>
         </div>
@@ -95,7 +99,8 @@ export default function YearlyHeatmap({
               >
                 {/* Tooltip */}
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-[8px] rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-xl border border-white/10">
-                  {format(day, "dd MMM", { locale: dateLocale })}: {shiftLabel}
+                  {format(day, "dd MMM", { locale: dateLocale })}:{" "}
+                  {formatShiftLabel(shiftLabel)}
                 </div>
               </div>
             );

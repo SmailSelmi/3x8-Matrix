@@ -15,11 +15,11 @@ import {
   subMonths,
 } from "date-fns";
 import { arDZ } from "date-fns/locale";
+import { getHolidayForDate, formatShiftLabel } from "@/lib/dateUtils";
 import { AppSettings } from "@/hooks/useAppSettings";
 import { SystemType, ShiftType } from "@/lib/shiftPatterns";
 import { getShiftForDate } from "@/hooks/useShiftLogic";
 import { Sun, Moon, Coffee, Plane } from "lucide-react";
-import { getHolidayForDate } from "@/lib/dateUtils";
 
 interface MonthGridProps {
   settings: AppSettings;
@@ -94,9 +94,9 @@ export default function MonthGrid({
   };
 
   const shiftLabels: Record<ShiftType, string> = {
-    day: "صباحي",
-    evening: "مسائي",
-    night: "ليلي",
+    day: "صباح + ليل",
+    evening: "عمل مسائية",
+    night: "ليلية",
     rest: "راحة",
     leave: "إجازة",
   };
@@ -237,7 +237,7 @@ export default function MonthGrid({
               {SHIFT_ICONS[type]}
             </div>
             <span className="text-[9px] text-slate-400 uppercase font-black tracking-wider">
-              {shiftLabels[type]}
+              {formatShiftLabel(shiftLabels[type])}
             </span>
           </div>
         ))}

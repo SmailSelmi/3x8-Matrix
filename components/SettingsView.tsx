@@ -27,12 +27,14 @@ interface SettingsViewProps {
   settings: AppSettings;
   updateSettings: (s: Partial<AppSettings>) => void;
   resetSettings: () => void;
+  onClose?: () => void;
 }
 
 export default function SettingsView({
   settings,
   updateSettings,
   resetSettings,
+  onClose,
 }: SettingsViewProps) {
   const [showResetConfirm, setShowResetConfirm] = React.useState(false);
   const [showAddLeave, setShowAddLeave] = React.useState(false);
@@ -626,6 +628,18 @@ export default function SettingsView({
           </span>
         </button>
       </div>
+
+      {/* Save and Close Button */}
+      {onClose && (
+        <div className="mt-4 px-1 pb-4">
+          <button
+            onClick={onClose}
+            className="w-full bg-blue-600 text-white font-black rounded-2xl py-4 px-4 active:scale-95 transition-all shadow-lg shadow-blue-500/20"
+          >
+            حفظ وإغلاق
+          </button>
+        </div>
+      )}
 
       <div className="text-center flex flex-col items-center gap-1 py-4">
         <div className="text-xs font-medium text-slate-600 uppercase tracking-[0.4em]">

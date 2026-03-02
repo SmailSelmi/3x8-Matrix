@@ -23,13 +23,13 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "Trois Huit",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#020617",
+  themeColor: "#2563eb",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",

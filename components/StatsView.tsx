@@ -5,6 +5,7 @@ import { useState, useMemo } from "react";
 import { AppSettings } from "@/hooks/useAppSettings";
 import { getShiftForDate } from "@/hooks/useShiftLogic";
 import { useStats } from "@/hooks/useStats";
+import { formatShiftLabel } from "@/lib/dateUtils";
 import { ShiftType } from "@/lib/shiftPatterns";
 import {
   BarChart2,
@@ -29,9 +30,9 @@ const SHIFT_META: Record<
   ShiftType,
   { label: string; icon: string; color: string; hours: number }
 > = {
-  day: { label: "صباحي + ليلي", icon: "☀️", color: "#f59e0b", hours: 8 },
-  evening: { label: "مسائي", icon: "🌆", color: "#f97316", hours: 8 },
-  night: { label: "ليلي", icon: "🌙", color: "#818cf8", hours: 8 },
+  day: { label: "صباح + ليل", icon: "☀️", color: "#f59e0b", hours: 8 },
+  evening: { label: "عمل مسائية", icon: "🌆", color: "#f97316", hours: 8 },
+  night: { label: "ليلية", icon: "🌙", color: "#818cf8", hours: 8 },
   rest: { label: "راحة", icon: "🛡️", color: "#10b981", hours: 0 },
   leave: { label: "إجازة", icon: "✈️", color: "#64748b", hours: 0 },
 };
@@ -214,7 +215,9 @@ function HistoryRow({
           {meta.icon}
         </div>
         <div>
-          <div className="text-sm font-black text-slate-200">{meta.label}</div>
+          <div className="text-sm font-black text-slate-200">
+            {formatShiftLabel(meta.label)}
+          </div>
           <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
             {dateStr}
           </div>
@@ -356,8 +359,8 @@ export default function StatsView({ settings }: StatsViewProps) {
                 : "bg-white/[0.03] border-transparent text-slate-500 hover:text-slate-300"
             }`}
           >
-            {t.icon}
             {t.label}
+            {t.icon}
           </button>
         ))}
       </div>
@@ -387,7 +390,8 @@ export default function StatsView({ settings }: StatsViewProps) {
                     حالة اليوم
                   </div>
                   <div className="text-2xl font-black text-slate-100 flex items-center gap-2">
-                    {SHIFT_META[todayShift].icon} {SHIFT_META[todayShift].label}
+                    {SHIFT_META[todayShift].icon}{" "}
+                    {formatShiftLabel(SHIFT_META[todayShift].label)}
                   </div>
                   <div className="text-[11px] font-bold text-slate-500 mt-1">
                     {isVacation
@@ -551,7 +555,7 @@ export default function StatsView({ settings }: StatsViewProps) {
                         style={{ backgroundColor: SHIFT_META[type].color }}
                       />
                       <span className="text-[10px] font-bold text-slate-400 flex-1">
-                        {SHIFT_META[type].label}
+                        {formatShiftLabel(SHIFT_META[type].label)}
                       </span>
                       <span className="font-mono text-[10px] font-black text-slate-300">
                         {n(count)}
@@ -629,10 +633,10 @@ export default function StatsView({ settings }: StatsViewProps) {
             className="flex flex-col gap-2 animate-slide-up-modal"
           >
             <div className="flex items-center gap-2 px-1 mb-1">
-              <ChevronLeft size={13} className="text-slate-600" />
               <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">
                 الجدول القادم (14 يوم)
               </span>
+              <ChevronLeft size={13} className="text-slate-600" />
             </div>
             {scheduleDays.map((row, i) => (
               <HistoryRow

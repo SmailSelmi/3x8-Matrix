@@ -37,7 +37,7 @@ export default function AppShell() {
 
   // Lifted Calibration & Extension States
   const [calibrationStep, setCalibrationStep] = useState<
-    "none" | "sync_work" | "sync_vacation" | "shift_plus" | "shift_minus"
+    "none" | "sync_work" | "sync_vacation"
   >("none");
   const [showCalibrationMenu, setShowCalibrationMenu] = useState(false);
   const [showExtensionMenu, setShowExtensionMenu] = useState(false);
@@ -163,16 +163,6 @@ export default function AppShell() {
             subDays(new Date(), settings.workDuration),
             "yyyy-MM-dd",
           ),
-        });
-        break;
-      case "shift_plus":
-        updateSettings({
-          cycleStartDate: format(addDays(currentDate, 1), "yyyy-MM-dd"),
-        });
-        break;
-      case "shift_minus":
-        updateSettings({
-          cycleStartDate: format(subDays(currentDate, 1), "yyyy-MM-dd"),
         });
         break;
     }
@@ -343,6 +333,7 @@ export default function AppShell() {
               settings={settings}
               updateSettings={updateSettings}
               resetSettings={resetSettings}
+              onClose={() => setActiveTab("HOME")}
             />
           </div>
         );
@@ -359,6 +350,7 @@ export default function AppShell() {
         userName={settings.userName || "زميل"}
         profileImage={settings.profileImage}
         currentTime={clock.now}
+        activeTab={activeTab}
         onNavigate={setActiveTab}
       />
 
@@ -402,38 +394,6 @@ export default function AppShell() {
               </span>
             </button>
           </div>
-
-          <div className="flex flex-col gap-2 p-4 rounded-2xl bg-white/[0.02] border border-white/5 mx-1">
-            <span className="text-[10px] font-black text-slate-600 uppercase mb-2 block">
-              إزاحة الدورة
-            </span>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => handleCalibration("shift_minus")}
-                className="flex-1 py-3 px-4 rounded-xl bg-white/5 border border-white/5 hover:border-white/20 transition-all flex items-center justify-between group"
-              >
-                <Minus
-                  size={14}
-                  className="text-slate-500 group-hover:-translate-x-1 transition-transform"
-                />
-                <span className="text-[11px] font-black text-slate-300">
-                  تأخير يوم
-                </span>
-              </button>
-              <button
-                onClick={() => handleCalibration("shift_plus")}
-                className="flex-1 py-3 px-4 rounded-xl bg-white/5 border border-white/5 hover:border-white/20 transition-all flex items-center justify-between group"
-              >
-                <span className="text-[11px] font-black text-slate-300">
-                  تقديم يوم
-                </span>
-                <Plus
-                  size={14}
-                  className="text-slate-500 group-hover:translate-x-1 transition-transform"
-                />
-              </button>
-            </div>
-          </div>
         </div>
       </BottomSheet>
 
@@ -451,8 +411,6 @@ export default function AppShell() {
               "تأكيد مزامنة بداية العمل اليوم"}
             {calibrationStep === "sync_vacation" &&
               "تأكيد مزامنة بداية الإجازة اليوم"}
-            {calibrationStep === "shift_plus" && "تأكيد تقديم الدورة يوم واحد"}
-            {calibrationStep === "shift_minus" && "تأكيد تأخير الدورة يوم واحد"}
           </p>
           <div className="grid grid-cols-2 gap-4 px-6">
             <button
