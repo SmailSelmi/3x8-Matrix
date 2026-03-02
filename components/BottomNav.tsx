@@ -2,10 +2,15 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
-import { Home, Calendar, BarChart2 } from "lucide-react";
+import { Home, Calendar, BarChart2, HeartPulse } from "lucide-react";
 
-export type NavTab = "HOME" | "AGENDA" | "STATS" | "PROFILE" | "SETTINGS";
+export type NavTab =
+  | "HOME"
+  | "AGENDA"
+  | "STATS"
+  | "HEALTH"
+  | "PROFILE"
+  | "SETTINGS";
 
 interface BottomNavProps {
   activeTab: NavTab;
@@ -14,9 +19,10 @@ interface BottomNavProps {
 
 export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   const tabs = [
-    { id: "STATS" as NavTab, label: "الإحصاء", icon: <BarChart2 size={24} /> },
     { id: "HOME" as NavTab, label: "الرئيسية", icon: <Home size={24} /> },
-    { id: "AGENDA" as NavTab, label: "الجدول", icon: <Calendar size={24} /> },
+    { id: "AGENDA" as NavTab, label: "التقويم", icon: <Calendar size={24} /> },
+    { id: "STATS" as NavTab, label: "إحصائيات", icon: <BarChart2 size={24} /> },
+    { id: "HEALTH" as NavTab, label: "صحتي", icon: <HeartPulse size={24} /> },
   ];
 
   return (
@@ -40,21 +46,13 @@ export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
             </div>
 
             {isActive && (
-              <motion.span
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-[10px] font-black tracking-wider text-white z-10"
-              >
+              <span className="text-[10px] font-black tracking-wider text-white z-10 animate-fade-in">
                 {tab.label}
-              </motion.span>
+              </span>
             )}
 
             {isActive && (
-              <motion.div
-                layoutId="activeTab"
-                className="absolute inset-x-2 inset-y-[-4px] bg-white/[0.08] border border-white/[0.1] rounded-2xl z-0"
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              />
+              <div className="absolute inset-x-2 inset-y-[-4px] bg-white/[0.08] border border-white/[0.1] rounded-2xl z-0 animate-fade-in" />
             )}
           </button>
         );

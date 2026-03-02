@@ -5,13 +5,77 @@
 @theme {
   --font-tajawal: "Tajawal", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
+
+  /* Custom Animations */
+  --animate-fade-in: fade-in 0.2s ease-out forwards;
+  --animate-fade-out: fade-out 0.2s ease-in forwards;
+  --animate-slide-up: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-slide-down: slide-down 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-slide-up-modal: slide-up-modal 0.4s cubic-bezier(0.16, 1, 0.3, 1)
+    forwards;
+  --animate-zoom-in: zoom-in 0.3s ease-out forwards;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes fade-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes slide-up {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  @keyframes slide-down {
+    from {
+      transform: translateY(-20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  @keyframes slide-up-modal {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+  @keyframes zoom-in {
+    from {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
 }
 
 :root {
   --background: #020617;
   --foreground: #f8fafc;
   --text-muted: #94a3b8;
-  
+
   --work-orange: #f97316;
   --rest-blue: #3b82f6;
   --leave-green: #22c55e;

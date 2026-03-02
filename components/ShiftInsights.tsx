@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import { motion, useSpring, useTransform } from "framer-motion";
 import {
   Plane,
   RotateCw,
@@ -31,14 +30,7 @@ const AnimatedValue = ({
   toFixed?: number;
   className?: string;
 }) => {
-  const spring = useSpring(0, { stiffness: 40, damping: 12 });
-  const display = useTransform(spring, (current) => current.toFixed(toFixed));
-
-  useEffect(() => {
-    spring.set(value);
-  }, [spring, value]);
-
-  return <motion.span className={className}>{display}</motion.span>;
+  return <span className={className}>{value.toFixed(toFixed)}</span>;
 };
 
 export default function ShiftInsights({
@@ -176,12 +168,13 @@ export default function ShiftInsights({
   return (
     <div className="grid grid-cols-2 gap-4 w-full h-full p-2">
       {cards.map((card, idx) => (
-        <motion.div
+        <div
           key={idx}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: card.delay, duration: 0.5, ease: "easeOut" }}
-          className="relative group overflow-hidden glass-card rounded-[2rem] p-5 flex flex-col justify-between"
+          className="relative group overflow-hidden glass-card rounded-[2rem] p-5 flex flex-col justify-between animate-slide-up-modal"
+          style={{
+            animationDelay: `${card.delay}s`,
+            animationFillMode: "both",
+          }}
         >
           <div
             className={`absolute inset-0 bg-gradient-to-br ${card.bg} opacity-50`}
@@ -208,7 +201,7 @@ export default function ShiftInsights({
               {card.sub}
             </div>
           </div>
-        </motion.div>
+        </div>
       ))}
     </div>
   );

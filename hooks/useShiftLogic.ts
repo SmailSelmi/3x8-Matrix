@@ -14,6 +14,7 @@ import {
   isSameDay,
   format,
 } from "date-fns";
+import { useAppSettings } from "@/hooks/useAppSettings";
 
 export interface ShiftInfo {
   type: ShiftType;
@@ -141,6 +142,8 @@ export default function useShiftLogic(
   workDurationExtension: number = 0,
   today: Date = new Date(),
 ) {
+  const { settings } = useAppSettings();
+
   return useMemo((): ShiftInfo => {
     const start = startOfDay(new Date(cycleStartDate));
     const dayStart = startOfDay(today);
@@ -331,15 +334,15 @@ export default function useShiftLogic(
 
     if (isVacation) {
       statusMessage = "أنت في فترة إجازة";
-      subStatusMessage = `اليوم ${vacationDay} من ${totalVacation}`;
+      subStatusMessage = `اليوم ${vacationDay}`;
     } else if (activeType === "rest") {
       statusMessage = "أنت في فترة راحة حالياً";
-      subStatusMessage = "استمتع بوقتك بعيداً عن العمل";
+      subStatusMessage = "";
     } else if (effCurrentMins < startTotalMins) {
       const h = Math.floor(hoursRemaining);
       const m = Math.floor((hoursRemaining % 1) * 60);
-      statusMessage = `ستبدأ فترة العمل بعد ${h} ساعة و ${m} دقيقة`;
-      subStatusMessage = `فترة العمل القادمة: ${meta.label}`;
+      statusMessage = `حتى ورديتك القادمة ${h}h ${m}m`;
+      subStatusMessage = `${meta.label}`;
     } else {
       const h = Math.floor(hoursRemaining);
       const m = Math.floor((hoursRemaining % 1) * 60);
@@ -347,16 +350,12 @@ export default function useShiftLogic(
 
       if (isExtensionDay) {
         statusMessage =
-          h === 0 && m === 0
-            ? "فترة التمديد منتهية"
-            : `يتبقى ${h} ساعة و ${m} دقيقة في يوم التمديد`;
-        subStatusMessage = `يوم عمل إضافي (${Math.floor(superPosition - workDuration + 1)}) لزيادة الدورة`;
+          h === 0 && m === 0 ? "فترة التمديد منتهية" : `${h}h ${m}m`;
+        subStatusMessage = "يوم عمل إضافي";
       } else {
         statusMessage =
-          h === 0 && m === 0
-            ? "فترة العمل منتهية"
-            : `يتبقى ${h} ساعة و ${m} دقيقة`;
-        subStatusMessage = `حتى نهاية فترة عمل ${meta.label}`;
+          h === 0 && m === 0 ? "فترة العمل منتهية" : `${h}h ${m}m`;
+        subStatusMessage = "ساعة متبقية";
       }
     }
 

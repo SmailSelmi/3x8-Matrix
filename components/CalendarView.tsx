@@ -1,5 +1,4 @@
 import React, { useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { format, addDays, startOfDay, isSameDay, startOfMonth } from "date-fns";
 import { arDZ } from "date-fns/locale";
 import { SystemType, ShiftType } from "@/lib/shiftPatterns";
@@ -107,11 +106,13 @@ export default function CalendarView({
 
   const days = Array.from({ length: 60 }, (_, i) => addDays(today, i - 10));
 
+  const dateLocale = arDZ;
+
   return (
     <div className="w-full flex flex-col">
       <div className="flex items-center justify-between px-6 pt-2">
         <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
-          تقويم فترة العمل
+          أجندة الدوام
         </span>
         <div className="flex items-center gap-2">
           {/* Export button — only visible when month grid is expanded */}
@@ -120,7 +121,7 @@ export default function CalendarView({
               onClick={() => onExportSchedule(gridMonth)}
               disabled={isExporting}
               className="p-2 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white disabled:opacity-50 transition-all flex items-center gap-2"
-              title="تحميل جدول الشهر"
+              title="تحميل جدول هذا الشهر"
             >
               {isExporting ? (
                 <Loader2 size={14} className="animate-spin" />
@@ -143,33 +144,31 @@ export default function CalendarView({
               <LayoutGrid size={14} />
             )}
             <span className="text-[10px] font-black uppercase">
-              {isExpanded ? "عرض مصغر" : "عرض الشهر"}
+              {isExpanded ? "الشريط" : "الشبكة"}
             </span>
           </button>
         </div>
       </div>
 
-      <AnimatePresence>
+      <>
         {showAnnouncement && (
           <AnnouncementBanner
-            title="ميزة جديدة: معايرة الجدول 🧭"
-            description="يمكنك الآن تصحيح جدولك يدوياً في حال المرض، ضياع الرحلات، أو العمل الإضافي. اضغط على أيقونة البوصلة أعلاه!"
+            title="ميزة جديدة: تصحيح الدوام"
+            description="الآن يمكنك الضغط على 🧭 لتصحيح أو تغيير أيام الدورة متى شئت بضغطة واحدة."
             onDismiss={handleDismissAnnouncement}
           />
         )}
-      </AnimatePresence>
+      </>
 
-      <AnimatePresence mode="wait">
+      <>
         {isExpanded ? (
-          <motion.div
+          <div
             key="grid"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="border-t border-white/5"
+            className="border-t border-white/5 animate-slide-down"
           >
             <div>
               <MonthGrid
+                settings={settings}
                 cycleStartDate={cycleStartDate}
                 systemType={systemType}
                 initialCycleDay={initialCycleDay}
@@ -183,16 +182,12 @@ export default function CalendarView({
                 onMonthChange={setGridMonth}
               />
             </div>
-          </motion.div>
+          </div>
         ) : (
-          <motion.div
+          <div
             key="strip"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            onAnimationComplete={() => scrollToToday()}
             ref={scrollRef}
-            className="flex gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory px-6 py-4"
+            className="flex gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory px-6 py-4 animate-fade-in"
             dir="rtl"
           >
             {days.map((date, idx) => {
@@ -230,8 +225,8 @@ export default function CalendarView({
                     ${isSelected ? "border scale-105" : "bg-white/[0.02] border border-transparent"}
                   `}
                 >
-                  <span className="text-[10px] font-black text-slate-500">
-                    {format(date, "EEEE", { locale: arDZ }).split(" ")[0]}
+                  <span className="text-[10px] font-black text-slate-500 capitalize">
+                    {format(date, "EEEE", { locale: dateLocale }).split(" ")[0]}
                   </span>
                   <div className="relative flex flex-col items-center">
                     <span
@@ -261,19 +256,14 @@ export default function CalendarView({
                 </button>
               );
             })}
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
+      </>
 
       {/* Footer action bar — visible only when month grid is expanded */}
-      <AnimatePresence>
+      <>
         {isExpanded && (
-          <motion.div
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            className="flex items-center justify-center gap-3 px-6 pb-4 pt-2 border-t border-white/5"
-          >
+          <div className="flex items-center justify-center gap-3 px-6 pb-4 pt-2 border-t border-white/5 animate-slide-up-modal">
             <button
               onClick={() => onShowCalibration()}
               className={`flex-1 p-2.5 rounded-xl transition-all flex items-center justify-center gap-2 relative ${
@@ -281,14 +271,14 @@ export default function CalendarView({
                   ? "bg-emerald-500/20 border border-emerald-500/50 text-emerald-400 shadow-lg shadow-emerald-500/10"
                   : "bg-emerald-500/5 border border-emerald-500/10 text-emerald-500 hover:bg-emerald-500/10"
               }`}
-              title="معايرة الجدول"
+              title="تصحيح يدوي"
             >
               <Compass
                 size={14}
                 className={showAnnouncement ? "animate-pulse" : ""}
               />
               <span className="text-[10px] font-black uppercase">
-                معايرة الجدول
+                تصحيح يدوي
               </span>
               {showAnnouncement && (
                 <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 border-2 border-slate-950 rounded-full animate-bounce" />
@@ -312,9 +302,9 @@ export default function CalendarView({
                 <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 border-2 border-slate-950 rounded-full animate-bounce" />
               )}
             </button>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
+      </>
     </div>
   );
 }

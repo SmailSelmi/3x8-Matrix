@@ -2,7 +2,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   Bell,
   BellOff,
@@ -33,18 +32,15 @@ export default function PushPermissionGate({
     }
   }, [isSubscribed]);
 
-  const showGate = !resolved && !isSubscribed;
+  // const showGate = !resolved && !isSubscribed;
+  const showGate = false; // Temporarily disabled for local development
 
   return (
     <>
-      <AnimatePresence>
+      <>
         {showGate && (
-          <motion.div
-            key="push-gate"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.4 } }}
-            className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden"
+          <div
+            className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden animate-fade-in"
             style={{ backgroundColor: "#020617" }}
           >
             {/* Ambient background glow */}
@@ -54,14 +50,8 @@ export default function PushPermissionGate({
             </div>
 
             {/* Card */}
-            <motion.div
-              initial={{ y: 32, opacity: 0 }}
-              animate={{
-                y: 0,
-                opacity: 1,
-                transition: { delay: 0.1, type: "spring", damping: 22 },
-              }}
-              className="relative z-10 flex flex-col items-center text-center max-w-sm w-full mx-6 px-8 py-10 rounded-3xl"
+            <div
+              className="relative z-10 flex flex-col items-center text-center max-w-sm w-full mx-6 px-8 py-10 rounded-3xl animate-slide-up-modal"
               style={{
                 background: "rgba(15, 23, 42, 0.85)",
                 border: "1px solid rgba(255,255,255,0.07)",
@@ -72,52 +62,30 @@ export default function PushPermissionGate({
               {/* Icon cluster */}
               <div className="relative mb-8">
                 <div className="w-24 h-24 rounded-3xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                  <AnimatePresence mode="wait">
-                    {permissionState === "loading" && (
-                      <motion.div
-                        key="loading"
-                        initial={{ opacity: 0, scale: 0.6 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0 }}
-                      >
-                        <Loader2
-                          size={40}
-                          className="text-blue-400 animate-spin"
-                        />
-                      </motion.div>
-                    )}
-                    {permissionState === "granted" && (
-                      <motion.div
-                        key="granted"
-                        initial={{ opacity: 0, scale: 0.6 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0 }}
-                      >
-                        <ShieldCheck size={40} className="text-emerald-400" />
-                      </motion.div>
-                    )}
-                    {permissionState === "denied" && (
-                      <motion.div
-                        key="denied"
-                        initial={{ opacity: 0, scale: 0.6 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0 }}
-                      >
-                        <BellOff size={40} className="text-red-400" />
-                      </motion.div>
-                    )}
-                    {(permissionState === "idle" ||
-                      permissionState === "error") && (
-                      <motion.div
-                        key="idle"
-                        initial={{ opacity: 0, scale: 0.6 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0 }}
-                      >
-                        <Bell size={40} className="text-blue-400" />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  {permissionState === "loading" && (
+                    <div className="animate-zoom-in">
+                      <Loader2
+                        size={40}
+                        className="text-blue-400 animate-spin"
+                      />
+                    </div>
+                  )}
+                  {permissionState === "granted" && (
+                    <div className="animate-zoom-in">
+                      <ShieldCheck size={40} className="text-emerald-400" />
+                    </div>
+                  )}
+                  {permissionState === "denied" && (
+                    <div className="animate-zoom-in">
+                      <BellOff size={40} className="text-red-400" />
+                    </div>
+                  )}
+                  {(permissionState === "idle" ||
+                    permissionState === "error") && (
+                    <div className="animate-zoom-in">
+                      <Bell size={40} className="text-blue-400" />
+                    </div>
+                  )}
                 </div>
                 {/* Pulsing ring */}
                 {(permissionState === "idle" ||
@@ -127,16 +95,10 @@ export default function PushPermissionGate({
               </div>
 
               {/* Content — switches based on permission state */}
-              <AnimatePresence mode="wait">
+              <>
                 {/* ── DENIED ── */}
                 {permissionState === "denied" && (
-                  <motion.div
-                    key="denied-msg"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    className="flex flex-col items-center gap-4"
-                  >
+                  <div className="flex flex-col items-center gap-4 animate-fade-in">
                     <h2 className="text-xl font-black text-slate-100 leading-tight">
                       الإشعارات مرفوضة
                     </h2>
@@ -160,36 +122,24 @@ export default function PushPermissionGate({
                     >
                       حاول مجدداً
                     </button>
-                  </motion.div>
+                  </div>
                 )}
 
                 {/* ── GRANTED (brief success) ── */}
                 {permissionState === "granted" && (
-                  <motion.div
-                    key="granted-msg"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    className="flex flex-col items-center gap-3"
-                  >
+                  <div className="flex flex-col items-center gap-3 animate-fade-in">
                     <h2 className="text-xl font-black text-emerald-400">
                       تم التفعيل!
                     </h2>
                     <p className="text-sm font-bold text-slate-400">
                       جارٍ فتح التطبيق…
                     </p>
-                  </motion.div>
+                  </div>
                 )}
 
                 {/* ── ERROR ── */}
                 {permissionState === "error" && (
-                  <motion.div
-                    key="error-msg"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    className="flex flex-col items-center gap-4"
-                  >
+                  <div className="flex flex-col items-center gap-4 animate-fade-in">
                     <h2 className="text-xl font-black text-slate-100">
                       حدث خطأ
                     </h2>
@@ -202,19 +152,13 @@ export default function PushPermissionGate({
                     >
                       إعادة المحاولة
                     </button>
-                  </motion.div>
+                  </div>
                 )}
 
                 {/* ── DEFAULT: idle or loading ── */}
                 {(permissionState === "idle" ||
                   permissionState === "loading") && (
-                  <motion.div
-                    key="default-msg"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    className="flex flex-col items-center gap-5 w-full"
-                  >
+                  <div className="flex flex-col items-center gap-5 w-full animate-fade-in">
                     <div>
                       <h2 className="text-2xl font-black text-slate-100 leading-tight mb-2">
                         تنبيهات المناوبة
@@ -274,13 +218,13 @@ export default function PushPermissionGate({
                       هذه الإشعارات ضرورية لاستخدام التطبيق. لن يتم إرسال بريد
                       عشوائي أبداً.
                     </p>
-                  </motion.div>
+                  </div>
                 )}
-              </AnimatePresence>
-            </motion.div>
-          </motion.div>
+              </>
+            </div>
+          </div>
         )}
-      </AnimatePresence>
+      </>
 
       {/* App is rendered in the DOM always but visually hidden by the gate overlay */}
       {children}

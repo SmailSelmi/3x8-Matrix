@@ -2,7 +2,6 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
 import { ShiftInfo } from "@/hooks/useShiftLogic";
 import GlassCard from "./GlassCard";
 import { Compass, Plus } from "lucide-react";
@@ -24,6 +23,9 @@ export default function ShiftCard({
   onShowExtension,
   extensionActive = false,
 }: ShiftCardProps) {
+  // Get date-fns locale based on language
+  const dateLocale = arDZ;
+
   return (
     <GlassCard
       glow
@@ -33,17 +35,17 @@ export default function ShiftCard({
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-1">
           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
-            {isToday ? "الحالة الحالية" : "تفاصيل اليوم"}
+            {isToday ? "الوضعية الحالية" : "تفاصيل اليوم"}
           </span>
           <h3 className="text-xl font-black text-slate-100">
             {shiftInfo.isVacation
               ? isToday
-                ? "أنت الآن في فترة إجازة 🌴"
-                : "يوم إجازة 🌴"
+                ? "في إجازة الآن"
+                : "يوم إجازة"
               : shiftInfo.type === "rest"
                 ? isToday
-                  ? "أنت في يوم راحة 🛡️"
-                  : "يوم راحة 🛡️"
+                  ? "في راحة الآن"
+                  : "يوم راحة"
                 : `فترة ${shiftInfo.label}`}
           </h3>
         </div>
@@ -108,12 +110,12 @@ export default function ShiftCard({
 
         {isToday && shiftInfo.type !== "rest" && shiftInfo.type !== "leave" && (
           <div className="h-2 w-full bg-white/[0.05] rounded-full overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${shiftInfo.percentComplete}%` }}
-              transition={{ duration: 1, ease: "easeOut" }}
-              className="h-full rounded-full"
-              style={{ backgroundColor: shiftInfo.color }}
+            <div
+              className="h-full rounded-full transition-all duration-1000 ease-out"
+              style={{
+                width: `${shiftInfo.percentComplete}%`,
+                backgroundColor: shiftInfo.color,
+              }}
             />
           </div>
         )}
@@ -122,16 +124,16 @@ export default function ShiftCard({
       <div className="flex items-center justify-between pt-2 border-t border-white/[0.05]">
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-black uppercase text-slate-500">
-            {shiftInfo.isVacation ? "الاستئناف:" : "التالي:"}
+            {shiftInfo.isVacation ? "استئناف العمل يوم:" : "الفترة القادمة"}
           </span>
           <span className="text-[11px] font-black text-slate-300">
             {shiftInfo.isVacation
-              ? `${format(parseISO(shiftInfo.returnToWorkDate), "d MMMM", { locale: arDZ })} (${shiftInfo.returnToWorkShiftLabel})`
+              ? `${format(parseISO(shiftInfo.returnToWorkDate), "dd/MM/yy")} (${shiftInfo.returnToWorkShiftLabel})`
               : shiftInfo.nextShiftLabel}
           </span>
         </div>
         <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-          {`بعد ${shiftInfo.daysUntilNextShift} يوم`}
+          بعد {shiftInfo.daysUntilNextShift} أيام
         </div>
       </div>
     </GlassCard>

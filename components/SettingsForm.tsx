@@ -36,6 +36,10 @@ export default function SettingsForm({
             <input
               type="text"
               value={formData.userName}
+              enterKeyHint="done"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") e.currentTarget.blur();
+              }}
               onChange={(e) =>
                 setFormData({ ...formData, userName: e.target.value })
               }

@@ -9,7 +9,6 @@ import {
   getDay,
 } from "date-fns";
 import { arDZ } from "date-fns/locale";
-import { motion } from "framer-motion";
 
 interface YearlyHeatmapProps {
   year: number;
@@ -22,6 +21,7 @@ export default function YearlyHeatmap({
   startDateStr,
   startShiftOffset,
 }: YearlyHeatmapProps) {
+  const dateLocale = arDZ;
   const days = useMemo(() => {
     const start = startOfYear(new Date(year, 0, 1));
     const end = endOfYear(new Date(year, 0, 1));
@@ -54,14 +54,14 @@ export default function YearlyHeatmap({
       <div className="min-w-[800px]">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-sm font-black uppercase tracking-widest opacity-60">
-            خريطة المسار السنوي - {year}
+            دورة العمل - {year}
           </h3>
           <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest opacity-60">
             <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-orange-400" /> مساء
+              <div className="w-2 h-2 rounded-full bg-orange-400" /> مسائي
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-red-500" /> مزدوج
+              <div className="w-2 h-2 rounded-full bg-red-500" /> صباحي
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-blue-400" /> راحة
@@ -78,25 +78,26 @@ export default function YearlyHeatmap({
           {days.map((day, idx) => {
             const type = getShiftType(day);
             const shiftLabel =
-              type === 0 ? "مساء" : type === 1 ? "ليل" : "راحة";
+              type === 0 ? "مسائي" : type === 1 ? "صباحي" : "راحة";
 
             return (
-              <motion.div
+              <div
                 key={day.toISOString()}
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: idx * 0.001 }}
-                whileHover={{ scale: 1.8, zIndex: 50, borderRadius: "4px" }}
                 className={`
                          w-3.5 h-3.5 rounded-[2px] cursor-pointer relative group
+                         animate-zoom-in hover:scale-[1.8] hover:z-50 hover:rounded transition-all duration-200
                          ${type !== null ? colors[type as keyof typeof colors] || "bg-slate-200 dark:bg-slate-800" : "bg-slate-100 dark:bg-slate-900"}
                       `}
+                style={{
+                  animationDelay: `${idx * 0.001}s`,
+                  animationFillMode: "both",
+                }}
               >
                 {/* Tooltip */}
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-[8px] rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-xl border border-white/10">
-                  {format(day, "dd MMM", { locale: arDZ })}: {shiftLabel}
+                  {format(day, "dd MMM", { locale: dateLocale })}: {shiftLabel}
                 </div>
-              </motion.div>
+              </div>
             );
           })}
         </div>

@@ -2,7 +2,6 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
 import { ShiftType } from "@/lib/shiftPatterns";
 
 interface ShiftGaugeProps {
@@ -39,12 +38,12 @@ export default function ShiftGauge({
 
   const displayDay = isVacation ? vacationDay : cycleDay;
   const displayTotal = isVacation ? totalVacationDays : totalCycleDays;
-  const displayLabel = isVacation ? "اليوم في الإجازة" : "اليوم في الدورة";
+  const displayLabel = isVacation ? "يوم في الإجازة" : "يوم في الدورة";
 
   // Calculate more precise time remaining for the label
   const h = Math.floor(hoursRemaining);
   const m = Math.floor((hoursRemaining % 1) * 60);
-  const timeLabel = h > 0 ? `${h} س و ${m} د` : `${m} دقيقة`;
+  const timeLabel = h > 0 ? `متبقي ${h}س و ${m}د` : `متبقي ${m} دقيقة`;
 
   return (
     <div
@@ -78,7 +77,7 @@ export default function ShiftGauge({
         />
 
         {/* Outer Ring: Cycle/Vacation Progress */}
-        <motion.circle
+        <circle
           cx={center}
           cy={center}
           r={outerRadius}
@@ -86,20 +85,20 @@ export default function ShiftGauge({
           stroke={color}
           strokeWidth="6"
           strokeDasharray={outerCircumference}
-          initial={{ strokeDashoffset: outerCircumference }}
-          animate={{
-            strokeDashoffset:
-              outerCircumference *
-              (1 - (isVacation ? cycleProgress || 0 : cycleProgress)),
-          }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
+          strokeDashoffset={
+            outerCircumference *
+            (1 - (isVacation ? cycleProgress || 0 : cycleProgress))
+          }
           strokeLinecap="round"
-          style={{ filter: `drop-shadow(0 0 8px ${color}40)` }}
+          style={{
+            filter: `drop-shadow(0 0 8px ${color}40)`,
+            transition: "stroke-dashoffset 1.5s ease-out",
+          }}
           className="opacity-40"
         />
 
         {/* Inner Ring: Shift/Day Progress */}
-        <motion.circle
+        <circle
           cx={center}
           cy={center}
           r={innerRadius}
@@ -107,50 +106,39 @@ export default function ShiftGauge({
           stroke={color}
           strokeWidth="8"
           strokeDasharray={innerCircumference}
-          initial={{ strokeDashoffset: innerCircumference }}
-          animate={{
-            strokeDashoffset: innerCircumference * (1 - shiftProgress),
-          }}
-          transition={{ duration: 1.2, ease: "easeOut", delay: 0.2 }}
+          strokeDashoffset={innerCircumference * (1 - shiftProgress)}
           strokeLinecap="round"
-          style={{ filter: `drop-shadow(0 0 12px ${color}60)` }}
+          style={{
+            filter: `drop-shadow(0 0 12px ${color}60)`,
+            transition: "stroke-dashoffset 1.2s ease-out 0.2s",
+          }}
         />
       </svg>
 
       {/* Center Content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-        <motion.span
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1"
-        >
+        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1 animate-zoom-in">
           {displayLabel}
-        </motion.span>
+        </span>
         <div className="flex items-baseline gap-1">
-          <motion.span
-            initial={{ y: 10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="text-6xl font-black text-slate-100 font-mono tracking-tighter"
-          >
+          <span className="text-6xl font-black text-slate-100 font-mono tracking-tighter animate-fade-in">
             {displayDay}
-          </motion.span>
+          </span>
           <span className="text-xl font-black text-slate-600 font-mono">/</span>
           <span className="text-xl font-black text-slate-600 font-mono">
             {displayTotal}
           </span>
         </div>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.4 }}
-          transition={{ delay: 0.5 }}
-          className="mt-2 text-[11px] font-bold text-slate-400"
+        <div
+          className="mt-2 text-[11px] font-bold text-slate-400 animate-fade-in"
+          style={{ animationDelay: "0.5s", animationFillMode: "both" }}
         >
           {isVacation
             ? displayTotal! - displayDay! > 0
-              ? `باقي ${displayTotal! - displayDay!} يوم و ${h} س`
-              : `باقي ${h} س و ${m} د`
-            : `متبقي ${timeLabel}`}
-        </motion.div>
+              ? `بقي ${displayTotal! - displayDay!} أيام (${h}س)`
+              : `متبقي ${h}س و ${m}د`
+            : timeLabel}
+        </div>
       </div>
     </div>
   );

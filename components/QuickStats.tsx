@@ -2,7 +2,6 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
 import { Zap, CheckCircle2, Bed, Target as TargetIcon } from "lucide-react";
 import GlassCard from "./GlassCard";
 
@@ -62,14 +61,15 @@ export default function QuickStats({
           className="p-5 flex flex-col gap-3"
           animate={false}
         >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: stat.delay / 1000 + 0.5 }}
-            className={`w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center ${stat.color}`}
+          <div
+            className={`w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center ${stat.color} animate-zoom-in`}
+            style={{
+              animationDelay: `${stat.delay / 1000 + 0.5}s`,
+              animationFillMode: "both",
+            }}
           >
             {stat.icon}
-          </motion.div>
+          </div>
           <div className="flex flex-col">
             <div className="flex items-baseline gap-1">
               <span className="text-2xl font-black text-slate-100 font-mono">

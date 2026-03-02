@@ -45,14 +45,6 @@ const SHIFT_TEXT: Record<ShiftType, string> = {
   rest: "#334155",
   leave: "#4ade80",
 };
-// Single arabic initial shown inside compact cells
-const SHIFT_LABEL: Record<ShiftType, string> = {
-  day: "صباحي+ليلي",
-  evening: "مسائي",
-  night: "ليلي",
-  rest: "راحة",
-  leave: "إجازة",
-};
 const SHIFT_DOT: Record<ShiftType, string> = {
   day: "#f97316",
   evening: "#8b5cf6",
@@ -60,14 +52,6 @@ const SHIFT_DOT: Record<ShiftType, string> = {
   rest: "#1e293b",
   leave: "#22c55e",
 };
-const SHIFT_FULL: Record<ShiftType, string> = {
-  day: "صباحي + ليلي",
-  evening: "مسائي",
-  night: "ليلي",
-  rest: "راحة",
-  leave: "إجازة",
-};
-const WEEKDAYS_SHORT = ["أحد", "اثنين", "ثلاث", "أربع", "خميس", "جمعة", "سبت"];
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function ScheduleSnapshot({
@@ -89,8 +73,28 @@ export default function ScheduleSnapshot({
   const calEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
   const days = eachDayOfInterval({ start: calStart, end: calEnd });
 
+  const SHIFT_LABEL: Record<ShiftType, string> = {
+    day: "ص",
+    evening: "م",
+    night: "ل",
+    rest: "ر",
+    leave: "إ",
+  };
+
+  const SHIFT_FULL: Record<ShiftType, string> = {
+    day: "صباحي",
+    evening: "مسائي",
+    night: "ليلي",
+    rest: "راحة",
+    leave: "إجازة",
+  };
+
+  const weekDayLabels = [0, 1, 2, 3, 4, 5, 6].map((d) =>
+    format(new Date(2024, 0, 7 + d), "EEE", { locale: arDZ }),
+  );
+
   const monthLabel = format(month, "MMMM yyyy", { locale: arDZ });
-  const generatedOn = format(new Date(), "d MMM yyyy", { locale: arDZ });
+  const generatedOn = format(new Date(), "dd/MM/yy");
 
   return (
     /**
@@ -104,11 +108,14 @@ export default function ScheduleSnapshot({
         left: "-9999px",
         top: "0",
         width: "390px",
-        backgroundColor: "#020617",
+        background: "linear-gradient(180deg, #0f172a 0%, #020617 100%)",
         fontFamily: "Tajawal, Arial, sans-serif",
         direction: "rtl",
         boxSizing: "border-box",
         overflow: "hidden",
+        borderRadius: "16px",
+        border: "1px solid rgba(255,255,255,0.08)",
+        boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
       }}
     >
       {/* ── Top rainbow bar ─────────────────────────────────────────────── */}
@@ -122,9 +129,9 @@ export default function ScheduleSnapshot({
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <div
         style={{
-          padding: "20px 20px 14px",
+          padding: "24px 24px 16px",
           background:
-            "linear-gradient(180deg,rgba(59,130,246,0.08) 0%,transparent 100%)",
+            "linear-gradient(180deg,rgba(59,130,246,0.12) 0%,transparent 100%)",
         }}
       >
         <div
@@ -178,13 +185,13 @@ export default function ScheduleSnapshot({
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(7,1fr)",
-          gap: "3px",
-          padding: "0 12px 4px",
+          gap: "4px",
+          padding: "0 16px 8px",
         }}
       >
-        {WEEKDAYS_SHORT.map((d) => (
+        {weekDayLabels.map((d, i) => (
           <div
-            key={d}
+            key={i}
             style={{
               textAlign: "center",
               fontSize: "8px",
@@ -203,8 +210,8 @@ export default function ScheduleSnapshot({
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(7,1fr)",
-          gap: "3px",
-          padding: "0 12px 16px",
+          gap: "4px",
+          padding: "0 16px 20px",
         }}
       >
         {days.map((date, i) => {
@@ -283,26 +290,26 @@ export default function ScheduleSnapshot({
       {/* ── Legend ──────────────────────────────────────────────────────── */}
       <div
         style={{
-          margin: "0 12px",
-          padding: "12px 0",
+          margin: "0 16px",
+          padding: "16px 0",
           borderTop: "1px solid rgba(255,255,255,0.06)",
         }}
       >
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(5,1fr)",
+            gridTemplateColumns: "repeat(4,1fr)",
             gap: "4px",
           }}
         >
-          {(Object.keys(SHIFT_FULL) as ShiftType[]).map((t) => (
+          {(["day", "evening", "rest", "leave"] as ShiftType[]).map((t) => (
             <div
               key={t}
               style={{
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: "4px",
+                gap: "6px",
               }}
             >
               <div
@@ -311,10 +318,11 @@ export default function ScheduleSnapshot({
                   height: "10px",
                   borderRadius: "50%",
                   backgroundColor: SHIFT_DOT[t],
+                  boxShadow: `0 0 8px ${SHIFT_DOT[t]}40`,
                 }}
               />
               <span
-                style={{ fontSize: "8px", fontWeight: 700, color: "#475569" }}
+                style={{ fontSize: "9px", fontWeight: 800, color: "#64748b" }}
               >
                 {SHIFT_FULL[t]}
               </span>
@@ -326,7 +334,7 @@ export default function ScheduleSnapshot({
       {/* ── Footer ──────────────────────────────────────────────────────── */}
       <div
         style={{
-          padding: "8px 12px 16px",
+          padding: "8px 16px 20px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",

@@ -2,7 +2,6 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
 import {
   Bell,
   Moon,
@@ -15,6 +14,7 @@ import {
   PieChart,
   Settings as SettingsIcon,
   Plus,
+  Globe,
 } from "lucide-react";
 import GlassCard from "./GlassCard";
 import DatePickerAr from "./DatePickerAr";
@@ -99,14 +99,14 @@ export default function SettingsView({
       <section className="flex flex-col gap-3">
         <div className="flex items-center gap-2 px-1">
           <Layers size={14} className="text-blue-400" />
-          <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+          <h3 className="text-xs font-medium text-slate-500 uppercase tracking-[0.2em]">
             إعدادات فترة العمل
           </h3>
         </div>
         <GlassCard className="p-6 flex flex-col gap-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="flex flex-col gap-3">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+              <label className="text-xs font-medium text-slate-500 uppercase tracking-widest ml-1">
                 تاريخ مرجع الدورة (D1)
               </label>
               <DatePickerAr
@@ -115,13 +115,13 @@ export default function SettingsView({
                   updateSettings({ cycleStartDate: format(date, "yyyy-MM-dd") })
                 }
               />
-              <p className="text-[9px] font-bold text-slate-600 mr-1">
+              <p className="text-xs font-medium text-slate-600 mr-1">
                 هذا التاريخ يمثل اليوم الأول (D1) في دورتك
               </p>
             </div>
 
             <div className="flex flex-col gap-3">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+              <label className="text-xs font-medium text-slate-500 uppercase tracking-widest ml-1">
                 نظام الدوام
               </label>
               <div className="grid grid-cols-1 gap-2">
@@ -160,7 +160,7 @@ export default function SettingsView({
                   >
                     <div className="flex items-center justify-between">
                       <span
-                        className={`text-sm font-black ${settings.systemType === sys.id ? "text-blue-400" : "text-slate-200"}`}
+                        className={`text-base font-medium ${settings.systemType === sys.id ? "text-blue-400" : "text-slate-200"}`}
                       >
                         {sys.label}
                       </span>
@@ -168,7 +168,7 @@ export default function SettingsView({
                         <Check size={14} className="text-blue-500" />
                       )}
                     </div>
-                    <span className="text-[10px] font-bold text-slate-500">
+                    <span className="text-xs font-medium text-slate-500">
                       {sys.desc}
                     </span>
                   </button>
@@ -178,7 +178,7 @@ export default function SettingsView({
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-[10px] font-black text-slate-500 uppercase ml-1">
+            <label className="text-xs font-medium text-slate-500 uppercase ml-1">
               فترة العمل في تاريخ المرجع
             </label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -196,7 +196,7 @@ export default function SettingsView({
                       : "bg-white/5 border-transparent text-slate-500"
                   }`}
                 >
-                  <span className="text-[10px] font-black text-center">
+                  <span className="text-xs font-medium text-center">
                     {s.label}
                   </span>
                 </button>
@@ -210,19 +210,23 @@ export default function SettingsView({
       <section className="flex flex-col gap-3">
         <div className="flex items-center gap-2 px-1">
           <RotateCcw size={14} className="text-purple-400" />
-          <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+          <h3 className="text-xs font-medium text-slate-500 uppercase tracking-[0.2em]">
             نظام التناوب (Work/Vacation)
           </h3>
         </div>
         <GlassCard className="p-6 flex flex-col gap-6">
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase ml-1">
+              <label className="text-xs font-medium text-slate-500 uppercase ml-1">
                 أيام العمل
               </label>
               <input
                 type="number"
                 value={settings.workDuration || ""}
+                enterKeyHint="done"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") e.currentTarget.blur();
+                }}
                 onChange={(e) => {
                   const val = e.target.value;
                   updateSettings({
@@ -233,12 +237,16 @@ export default function SettingsView({
               />
             </div>
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase ml-1">
+              <label className="text-xs font-medium text-slate-500 uppercase ml-1">
                 أيام الإجازة
               </label>
               <input
                 type="number"
                 value={settings.vacationDuration || ""}
+                enterKeyHint="done"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") e.currentTarget.blur();
+                }}
                 onChange={(e) => {
                   const val = e.target.value;
                   updateSettings({
@@ -257,27 +265,18 @@ export default function SettingsView({
             className={`flex justify-between items-center bg-white/[0.02] border border-white/[0.05] rounded-2xl p-4 cursor-pointer hover:bg-white/[0.04] transition-all group active:scale-[0.98]`}
           >
             <div className="flex flex-col">
-              <span className="text-sm font-black text-slate-200 group-hover:text-white transition-colors">
+              <span className="text-base font-medium text-slate-200 group-hover:text-white transition-colors">
                 أيام الطريق (+2)
               </span>
-              <span className="text-[10px] font-bold text-slate-500">
+              <span className="text-xs font-medium text-slate-500">
                 إضافة يومين للسفر إلى إجازتك
               </span>
             </div>
             <div
               className={`w-12 h-6 rounded-full transition-all relative p-1 flex items-center ${settings.addRouteDays ? "bg-purple-600/20 border border-purple-500/50" : "bg-white/5 border border-white/10"}`}
             >
-              <motion.div
-                layout
-                initial={false}
-                animate={{
-                  x: settings.addRouteDays ? -24 : 0,
-                  backgroundColor: settings.addRouteDays
-                    ? "#A855F7"
-                    : "#475569",
-                }}
-                transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                className="w-4 h-4 rounded-full shadow-lg z-10"
+              <div
+                className={`w-4 h-4 rounded-full shadow-lg z-10 transition-transform duration-300 ${settings.addRouteDays ? "-translate-x-6 bg-purple-500" : "translate-x-0 bg-slate-500"}`}
               />
               <div
                 className={`absolute inset-0 rounded-full transition-opacity duration-300 ${settings.addRouteDays ? "opacity-100" : "opacity-0"}`}
@@ -292,7 +291,7 @@ export default function SettingsView({
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
             <Calendar size={14} className="text-emerald-400" />
-            <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+            <h3 className="text-xs font-medium text-slate-500 uppercase tracking-[0.2em]">
               الإجازة السنوية (30+ يوم)
             </h3>
           </div>
@@ -307,7 +306,7 @@ export default function SettingsView({
               size={12}
               className="text-slate-400 group-hover:text-blue-400 transition-colors"
             />
-            <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">
+            <span className="text-xs font-medium text-slate-400 uppercase tracking-tighter">
               تعديل الرصيد
             </span>
           </button>
@@ -320,7 +319,7 @@ export default function SettingsView({
                 <PieChart size={20} />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] font-black text-slate-500 uppercase">
+                <span className="text-xs font-medium text-slate-500 uppercase">
                   الرصيد المتبقي
                 </span>
                 <span className="text-lg font-black text-slate-100">
@@ -332,17 +331,17 @@ export default function SettingsView({
               </div>
             </div>
             <div className="text-left">
-              <span className="text-[10px] font-black text-slate-500 uppercase block">
+              <span className="text-xs font-medium text-slate-500 uppercase block">
                 المستهلك
               </span>
-              <span className="text-sm font-black text-slate-300">
+              <span className="text-base font-medium text-slate-300">
                 {annualLeaveConsumed} / {settings.annualLeaveTotal || 30}
               </span>
             </div>
           </div>
 
           <div className="flex flex-col gap-3">
-            <label className="text-[10px] font-black text-slate-500 uppercase ml-1">
+            <label className="text-xs font-medium text-slate-500 uppercase ml-1">
               الفترات المضافة
             </label>
             {(settings.annualLeaveBlocks || []).length > 0 ? (
@@ -353,11 +352,11 @@ export default function SettingsView({
                     className="p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between group"
                   >
                     <div className="flex flex-col">
-                      <span className="text-xs font-black text-slate-200">
-                        {format(new Date(block.start), "d MMM")} -{" "}
-                        {format(new Date(block.end), "d MMM")}
+                      <span className="text-sm font-medium text-slate-200">
+                        {format(new Date(block.start), "dd/MM/yy")} -{" "}
+                        {format(new Date(block.end), "dd/MM/yy")}
                       </span>
-                      <span className="text-[9px] font-bold text-slate-500">
+                      <span className="text-xs font-medium text-slate-500">
                         فترة محددة
                       </span>
                     </div>
@@ -372,7 +371,7 @@ export default function SettingsView({
               </div>
             ) : (
               <div className="p-6 text-center rounded-2xl border border-dashed border-white/10">
-                <span className="text-[10px] font-bold text-slate-600">
+                <span className="text-xs font-medium text-slate-600">
                   لم يتم إضافة أي فترات بعد
                 </span>
               </div>
@@ -384,7 +383,7 @@ export default function SettingsView({
                 setUsageType("custom");
                 setShowAddLeave(true);
               }}
-              className="w-full py-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-black hover:bg-emerald-500/20 transition-all flex items-center justify-center gap-2"
+              className="w-full py-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium hover:bg-emerald-500/20 transition-all flex items-center justify-center gap-2"
             >
               <Plus size={16} />
               إضافة فترة إجازة سنوية
@@ -397,7 +396,7 @@ export default function SettingsView({
       <section className="flex flex-col gap-3">
         <div className="flex items-center gap-2 px-1">
           <Moon size={14} className="text-violet-400" />
-          <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+          <h3 className="text-xs font-medium text-slate-500 uppercase tracking-[0.2em]">
             المظهر — لون اللكنة
           </h3>
         </div>
@@ -464,7 +463,7 @@ export default function SettingsView({
                     )}
                   </div>
                   <span
-                    className={`text-[9px] font-black uppercase tracking-wider transition-colors ${isActive ? "text-slate-200" : "text-slate-600"}`}
+                    className={`text-xs font-medium uppercase tracking-wider transition-colors ${isActive ? "text-slate-200" : "text-slate-600"}`}
                   >
                     {accent.label}
                   </span>
@@ -472,7 +471,7 @@ export default function SettingsView({
               );
             })}
           </div>
-          <p className="text-[9px] font-bold text-slate-600 text-center mt-4 leading-relaxed">
+          <p className="text-xs font-medium text-slate-600 text-center mt-4 leading-relaxed">
             يغيّر لون التوهج والحدود النشطة وعناصر التمييز في جميع الشاشات
           </p>
         </GlassCard>
@@ -483,7 +482,7 @@ export default function SettingsView({
       <section className="flex flex-col gap-3">
         <div className="flex items-center gap-2 px-1">
           <Zap size={14} className="text-orange-400" />
-          <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+          <h3 className="text-xs font-medium text-slate-500 uppercase tracking-[0.2em]">
             التفضيلات العامة
           </h3>
         </div>
@@ -501,10 +500,10 @@ export default function SettingsView({
                 <Bell size={18} />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-black text-slate-200 group-hover:text-white transition-colors">
+                <span className="text-base font-medium text-slate-200 group-hover:text-white transition-colors">
                   الإشعارات
                 </span>
-                <span className="text-[10px] font-bold text-slate-500">
+                <span className="text-xs font-medium text-slate-500">
                   تنبيهات فترة العمل والتحولات
                 </span>
               </div>
@@ -512,30 +511,17 @@ export default function SettingsView({
             <div
               className={`w-12 h-6 rounded-full transition-all relative p-1 flex items-center ${settings.notifications ? "bg-blue-600/20 border border-blue-500/50" : "bg-white/5 border border-white/10"}`}
             >
-              <motion.div
-                layout
-                initial={false}
-                animate={{
-                  x: settings.notifications ? -24 : 0,
-                  backgroundColor: settings.notifications
-                    ? "#3B82F6"
-                    : "#475569",
-                }}
-                transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                className="w-4 h-4 rounded-full shadow-lg z-10"
+              <div
+                className={`w-4 h-4 rounded-full shadow-lg z-10 transition-transform duration-300 ${settings.notifications ? "-translate-x-6 bg-blue-500" : "translate-x-0 bg-slate-500"}`}
               />
             </div>
           </div>
 
           {/* Smart Notification Deep Config */}
           {settings.notifications && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              className="border-t border-white/5 pt-4 flex flex-col gap-4 overflow-hidden"
-            >
+            <div className="border-t border-white/5 pt-4 flex flex-col gap-4 overflow-hidden animate-slide-down">
               <div className="flex flex-col gap-2">
-                <label className="text-[10px] font-black text-slate-500 uppercase ml-1">
+                <label className="text-xs font-medium text-slate-500 uppercase ml-1">
                   وقت التنبيه (قبل بـ)
                 </label>
                 <div className="flex items-center gap-2">
@@ -546,7 +532,7 @@ export default function SettingsView({
                         e.stopPropagation();
                         updateSettings({ notificationLeadTime: mins });
                       }}
-                      className={`flex-1 py-3 rounded-xl border text-xs font-black transition-all ${
+                      className={`flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${
                         settings.notificationLeadTime === mins
                           ? "bg-blue-600/10 border-blue-500 text-blue-400"
                           : "bg-white/5 border-transparent text-slate-500"
@@ -576,12 +562,12 @@ export default function SettingsView({
                         );
                       }
                     }}
-                    className="w-full py-3 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 text-[10px] font-black uppercase tracking-widest hover:bg-orange-500/20 transition-all"
+                    className="w-full py-3 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-medium uppercase tracking-widest hover:bg-orange-500/20 transition-all"
                   >
                     منح إذن الإشعارات للمتصفح
                   </button>
                 )}
-            </motion.div>
+            </div>
           )}
 
           <div
@@ -597,10 +583,10 @@ export default function SettingsView({
                 <Zap size={18} />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-black text-slate-200 group-hover:text-white transition-colors">
+                <span className="text-base font-medium text-slate-200 group-hover:text-white transition-colors">
                   الاهتزاز (Haptic)
                 </span>
-                <span className="text-[10px] font-bold text-slate-500">
+                <span className="text-xs font-medium text-slate-500">
                   ملاحظات لمسية عند التفاعل
                 </span>
               </div>
@@ -608,44 +594,10 @@ export default function SettingsView({
             <div
               className={`w-12 h-6 rounded-full transition-all relative p-1 flex items-center ${settings.hapticFeedback ? "bg-orange-600/20 border border-orange-500/50" : "bg-white/5 border border-white/10"}`}
             >
-              <motion.div
-                layout
-                initial={false}
-                animate={{
-                  x: settings.hapticFeedback ? -24 : 0,
-                  backgroundColor: settings.hapticFeedback
-                    ? "#EA580C"
-                    : "#475569",
-                }}
-                transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                className="w-4 h-4 rounded-full shadow-lg z-10"
+              <div
+                className={`w-4 h-4 rounded-full shadow-lg z-10 transition-transform duration-300 ${settings.hapticFeedback ? "-translate-x-6 bg-orange-500" : "translate-x-0 bg-slate-500"}`}
               />
             </div>
-          </div>
-
-          <div className="border-t border-white/5 pt-6 grid grid-cols-2 gap-3">
-            <button
-              onClick={() => updateSettings({ language: "ar" })}
-              className={`p-4 rounded-2xl border flex flex-col items-center gap-1 transition-all ${
-                settings.language === "ar"
-                  ? "bg-indigo-600/10 border-indigo-500/50 text-indigo-400"
-                  : "bg-white/5 border-transparent text-slate-500"
-              }`}
-            >
-              <span className="text-xs font-black">العربية</span>
-              <span className="text-[9px] font-bold opacity-50">AR</span>
-            </button>
-            <button
-              onClick={() => updateSettings({ language: "en" })}
-              className={`p-4 rounded-2xl border flex flex-col items-center gap-1 transition-all ${
-                settings.language === "en"
-                  ? "bg-indigo-600/10 border-indigo-500/50 text-indigo-400"
-                  : "bg-white/5 border-transparent text-slate-500"
-              }`}
-            >
-              <span className="text-xs font-black">English</span>
-              <span className="text-[9px] font-bold opacity-50">EN</span>
-            </button>
           </div>
         </GlassCard>
       </section>
@@ -661,22 +613,22 @@ export default function SettingsView({
               <RotateCcw size={18} />
             </div>
             <div className="flex flex-col text-right">
-              <span className="text-sm font-black text-red-400">
+              <span className="text-base font-medium text-red-400">
                 إعادة تعيين كاملة
               </span>
-              <span className="text-[10px] font-bold text-red-900/60 uppercase">
+              <span className="text-xs font-medium text-red-900/60 uppercase">
                 مسح كافة الإعدادات والبيانات
               </span>
             </div>
           </div>
-          <span className="text-xs font-black text-red-500 opacity-50 group-hover:opacity-100 transition-opacity">
+          <span className="text-sm font-medium text-red-500 opacity-50 group-hover:opacity-100 transition-opacity">
             تفعيل
           </span>
         </button>
       </div>
 
       <div className="text-center flex flex-col items-center gap-1 py-4">
-        <div className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em]">
+        <div className="text-xs font-medium text-slate-600 uppercase tracking-[0.4em]">
           Trois Huit v2.26
         </div>
         <div className="text-[8px] font-bold text-slate-700 uppercase tracking-[0.2em]">
@@ -725,7 +677,7 @@ export default function SettingsView({
       >
         <div className="flex flex-col gap-6 py-4" dir="rtl">
           <div className="flex flex-col gap-3">
-            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+            <label className="text-xs font-medium text-slate-500 uppercase tracking-widest">
               تاريخ البداية
             </label>
             <DatePickerAr
@@ -735,7 +687,7 @@ export default function SettingsView({
           </div>
 
           <div className="flex flex-col gap-3">
-            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+            <label className="text-xs font-medium text-slate-500 uppercase tracking-widest">
               نوع الاستهلاك
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -762,8 +714,8 @@ export default function SettingsView({
                       : "bg-white/5 border-transparent text-slate-500"
                   }`}
                 >
-                  <span className="text-xs font-black">{opt.label}</span>
-                  <span className="text-[9px] font-bold opacity-50">
+                  <span className="text-sm font-medium">{opt.label}</span>
+                  <span className="text-xs font-medium opacity-50">
                     {opt.id === "custom" ? "..." : `${opt.value}ي`}
                   </span>
                 </button>
@@ -772,17 +724,17 @@ export default function SettingsView({
           </div>
 
           {usageType === "custom" && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col gap-3"
-            >
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+            <div className="flex flex-col gap-3 animate-slide-down">
+              <label className="text-xs font-medium text-slate-500 uppercase tracking-widest">
                 عدد الأيام
               </label>
               <input
                 type="number"
                 value={newLeaveDuration || ""}
+                enterKeyHint="done"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") e.currentTarget.blur();
+                }}
                 onChange={(e) => {
                   const val = parseInt(e.target.value) || 0;
                   setNewLeaveDuration(Math.min(val, remainingDays));
@@ -791,13 +743,13 @@ export default function SettingsView({
                 placeholder="مثلاً: 10"
                 className="w-full bg-white/[0.02] border border-white/[0.05] rounded-xl px-4 py-3 text-sm text-slate-100 outline-none focus:border-blue-500 focus:bg-white/[0.04] transition-all"
               />
-              <p className="text-[9px] font-bold text-slate-600 mr-1">
+              <p className="text-xs font-medium text-slate-600 mr-1">
                 المتبقي متاح: {remainingDays} يوم
               </p>
-            </motion.div>
+            </div>
           )}
 
-          <p className="text-[10px] font-bold text-slate-500 text-center px-6">
+          <p className="text-xs font-medium text-slate-500 text-center px-6">
             سيتم احتساب {newLeaveDuration} يوم كإجازة سنوية وستظهر في التقويم كـ
             "إجازة".
           </p>
@@ -828,11 +780,11 @@ export default function SettingsView({
       <BottomSheet
         isOpen={showEditPool}
         onClose={() => setShowEditPool(false)}
-        title="تعديل رصيد الإجازة السنوية"
+        title="تعديل الرصيد الإجمالي"
       >
         <div className="flex flex-col gap-6 py-4" dir="rtl">
           <div className="flex flex-col gap-3">
-            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+            <label className="text-xs font-medium text-slate-500 uppercase tracking-widest">
               عدد الأيام الإجمالي للعام
             </label>
             <input
@@ -842,7 +794,7 @@ export default function SettingsView({
               placeholder="افتراضي: 30"
               className="w-full bg-[#0f172a] border border-white/5 rounded-xl px-4 py-3 text-sm font-bold text-slate-100 outline-none focus:border-blue-500/50 focus:bg-blue-500/5 focus:shadow-[0_0_15px_rgba(59,130,246,0.1)] transition-all"
             />
-            <p className="text-[9px] font-bold text-slate-600 mr-1">
+            <p className="text-xs font-medium text-slate-600 mr-1">
               أدخل إجمالي أيام الإجازة السنوية الممنوحة لك (مثلاً: 30 أو 45)
             </p>
           </div>

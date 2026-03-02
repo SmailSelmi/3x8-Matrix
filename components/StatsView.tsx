@@ -2,7 +2,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { AppSettings } from "@/hooks/useAppSettings";
 import { getShiftForDate } from "@/hooks/useShiftLogic";
 import { useStats } from "@/hooks/useStats";
@@ -126,12 +125,10 @@ function HBar({
   const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0;
   return (
     <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-      <motion.div
-        initial={{ width: 0 }}
-        animate={{ width: `${pct}%` }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="h-full rounded-full"
+      <div
+        className="h-full rounded-full transition-all duration-1000 ease-out"
         style={{
+          width: `${pct}%`,
           background: `linear-gradient(90deg, ${color}99, ${color})`,
           boxShadow: `0 0 8px ${color}55`,
         }}
@@ -201,12 +198,10 @@ function HistoryRow({
     month: "short",
   });
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay, type: "spring", stiffness: 300, damping: 30 }}
+    <div
       dir="rtl"
-      className="flex items-center justify-between px-4 py-3.5 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] transition-all"
+      className="flex items-center justify-between px-4 py-3.5 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] transition-all animate-fade-in"
+      style={{ animationDelay: `${delay}s`, animationFillMode: "both" }}
     >
       <div className="flex items-center gap-3">
         <div
@@ -231,7 +226,7 @@ function HistoryRow({
       >
         {meta.hours > 0 ? `${meta.hours}س` : "—"}
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -243,7 +238,7 @@ interface StatsViewProps {
 const TABS = [
   { id: "overview", label: "نظرة عامة", icon: <BarChart2 size={14} /> },
   { id: "history", label: "السجل", icon: <CalendarCheck size={14} /> },
-  { id: "schedule", label: "القادم", icon: <ChevronLeft size={14} /> },
+  { id: "schedule", label: "الجدول", icon: <ChevronLeft size={14} /> },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
 
@@ -367,14 +362,11 @@ export default function StatsView({ settings }: StatsViewProps) {
         ))}
       </div>
 
-      <AnimatePresence mode="wait">
+      <>
         {tab === "overview" && (
-          <motion.div
+          <div
             key="overview"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="flex flex-col gap-5"
+            className="flex flex-col gap-5 animate-slide-up-modal"
           >
             {/* ── Today's status banner ──────────────────────────────────── */}
             <GlassCard
@@ -392,16 +384,16 @@ export default function StatsView({ settings }: StatsViewProps) {
               <div className="relative z-10 flex items-center justify-between">
                 <div>
                   <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">
-                    وضعية اليوم
+                    حالة اليوم
                   </div>
                   <div className="text-2xl font-black text-slate-100 flex items-center gap-2">
                     {SHIFT_META[todayShift].icon} {SHIFT_META[todayShift].label}
                   </div>
                   <div className="text-[11px] font-bold text-slate-500 mt-1">
                     {isVacation
-                      ? "استمتع بيومك ✨"
+                      ? "يوم إجازة سعيد"
                       : isRest
-                        ? "يوم راحة مستحق 🛡️"
+                        ? "راحة مستحقة"
                         : `${SHIFT_META[todayShift].hours} ساعات عمل`}
                   </div>
                 </div>
@@ -431,7 +423,7 @@ export default function StatsView({ settings }: StatsViewProps) {
                   <div
                     className={`px-3 py-1 rounded-full text-[9px] font-black uppercase ${isVacation ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" : "bg-white/5 text-slate-500 border border-white/5"}`}
                   >
-                    {isVacation ? "أنت في إجازة 🎉" : "مجدولة"}
+                    {isVacation ? "في إجازة الآن" : "مجدولة"}
                   </div>
                 </div>
 
@@ -449,7 +441,7 @@ export default function StatsView({ settings }: StatsViewProps) {
                       {n(stats.vacationsInYear)}
                     </div>
                     <div className="text-[9px] font-bold text-slate-600 mt-1">
-                      إجمالي السنة
+                      الإجمالي
                     </div>
                   </div>
                   <div className="text-center">
@@ -457,7 +449,7 @@ export default function StatsView({ settings }: StatsViewProps) {
                       {n(stats.vacationsRemaining)}
                     </div>
                     <div className="text-[9px] font-bold text-slate-600 mt-1">
-                      متبقية
+                      المتبقي
                     </div>
                   </div>
                 </div>
@@ -493,7 +485,7 @@ export default function StatsView({ settings }: StatsViewProps) {
               />
               <div className="flex justify-between mt-3">
                 <span className="text-[10px] font-bold text-slate-600">
-                  منقضي: {n(stats.daysWorkedInCycle)} يوم
+                  المنقضي: {n(stats.daysWorkedInCycle)} يوم
                 </span>
                 <span className="text-[10px] font-bold text-slate-600">
                   متبقي: {n(stats.totalWorkBlockDays - stats.daysWorkedInCycle)}{" "}
@@ -521,7 +513,7 @@ export default function StatsView({ settings }: StatsViewProps) {
               />
               <div className="flex justify-between mt-3">
                 <span className="text-[10px] font-bold text-slate-600">
-                  مستهلك: {n(stats.annualLeaveConsumed)} يوم
+                  المستهلك: {n(stats.annualLeaveConsumed)} يوم
                 </span>
                 <span className="text-[10px] font-bold text-emerald-600/80">
                   متبقي: {n(stats.annualLeaveRemaining)} يوم
@@ -545,7 +537,7 @@ export default function StatsView({ settings }: StatsViewProps) {
                       {n(totalDays)}
                     </span>
                     <span className="text-[8px] font-bold text-slate-600 uppercase">
-                      يوم
+                      يوم مجدول
                     </span>
                   </div>
                 </div>
@@ -579,7 +571,7 @@ export default function StatsView({ settings }: StatsViewProps) {
             <div className="grid grid-cols-2 gap-3">
               <Pill
                 icon={<Clock size={14} />}
-                label="ساعات العمل هذا الشهر"
+                label="ساعات العمل"
                 value={`${n(stats.hoursThisMonth)}س`}
                 sub="شهر"
                 color="#fbbf24"
@@ -593,9 +585,9 @@ export default function StatsView({ settings }: StatsViewProps) {
               />
               <Pill
                 icon={<Sun size={14} />}
-                label="مناوبات أُكملت"
+                label="مناوبات مكتملة"
                 value={n(stats.shiftsCompleted)}
-                sub="تم إكمالها"
+                sub="مكتمل"
                 color="#f59e0b"
               />
               <Pill
@@ -606,16 +598,13 @@ export default function StatsView({ settings }: StatsViewProps) {
                 color="#ef4444"
               />
             </div>
-          </motion.div>
+          </div>
         )}
 
         {tab === "history" && (
-          <motion.div
+          <div
             key="history"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="flex flex-col gap-2"
+            className="flex flex-col gap-2 animate-slide-up-modal"
           >
             <div className="flex items-center gap-2 px-1 mb-1">
               <CalendarCheck size={13} className="text-slate-600" />
@@ -631,16 +620,13 @@ export default function StatsView({ settings }: StatsViewProps) {
                 delay={i * 0.04}
               />
             ))}
-          </motion.div>
+          </div>
         )}
 
         {tab === "schedule" && (
-          <motion.div
+          <div
             key="schedule"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="flex flex-col gap-2"
+            className="flex flex-col gap-2 animate-slide-up-modal"
           >
             <div className="flex items-center gap-2 px-1 mb-1">
               <ChevronLeft size={13} className="text-slate-600" />
@@ -656,9 +642,9 @@ export default function StatsView({ settings }: StatsViewProps) {
                 delay={i * 0.04}
               />
             ))}
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
+      </>
 
       <div className="text-center text-[8px] font-black text-slate-800 uppercase tracking-[0.4em] py-8">
         Trois Huit Analytics Engine

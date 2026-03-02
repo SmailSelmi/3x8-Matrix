@@ -23,7 +23,6 @@ import {
   Check,
   ChevronDown,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 
 interface Props {
   selectedDate: Date;
@@ -52,7 +51,9 @@ export default function DatePickerAr({ selectedDate, onChange }: Props) {
     }
   }, [open]);
 
-  const weekDayLabels = ["س", "ح", "ن", "ث", "ر", "خ", "ج"];
+  const weekDayLabels = [0, 1, 2, 3, 4, 5, 6].map((d) =>
+    format(new Date(2024, 0, 6 + d), "EEEEE", { locale: arDZ }),
+  );
 
   const triggerHaptic = (vibrate = 10) => {
     if (
@@ -81,22 +82,21 @@ export default function DatePickerAr({ selectedDate, onChange }: Props) {
     setOpen(false);
   };
 
-  const displayValue = format(selectedDate, "EEEE، d MMMM yyyy", {
+  const displayValue = format(selectedDate, "EEEE, d MMMM yyyy", {
     locale: arDZ,
   });
 
   return (
     <div ref={containerRef} className="relative w-full">
       {/* Trigger Button */}
-      <motion.button
+      <button
         type="button"
-        whileTap={{ scale: 0.98 }}
         onClick={() => {
           if (!open) setViewDate(selectedDate);
           setOpen(!open);
           triggerHaptic(5);
         }}
-        className={`w-full glass-card text-foreground border rounded-2xl p-4 text-right transition-all flex items-center justify-between gap-3 shadow-sm ${
+        className={`w-full glass-card text-foreground border rounded-2xl p-4 text-right transition-all flex items-center justify-between gap-3 shadow-sm active:scale-[0.98] ${
           open
             ? "border-blue-500 ring-4 ring-blue-500/10"
             : "border-slate-200 dark:border-white/10"
@@ -113,73 +113,68 @@ export default function DatePickerAr({ selectedDate, onChange }: Props) {
           size={16}
           className={`text-slate-400 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
         />
-      </motion.button>
+      </button>
 
       {/* Calendar Dropdown */}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute top-full mt-3 left-0 right-0 z-[110] bg-card/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200 dark:border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden"
-          >
-            {/* Month Navigation */}
-            <div className="flex items-center justify-between px-6 py-5 bg-white/5 border-b border-white/5">
-              <button
-                type="button"
-                onClick={() => {
-                  setViewDate(subMonths(viewDate, 1));
-                  triggerHaptic(5);
-                }}
-                className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 transition-all active:scale-80"
-              >
-                <ChevronRight size={22} />
-              </button>
+      {open && (
+        <div className="absolute top-full mt-3 left-0 right-0 z-[110] bg-card/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200 dark:border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden animate-zoom-in">
+          {/* Month Navigation */}
+          <div className="flex items-center justify-between px-6 py-5 bg-white/5 border-b border-white/5">
+            <button
+              type="button"
+              onClick={() => {
+                setViewDate(subMonths(viewDate, 1));
+                triggerHaptic(5);
+              }}
+              className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 transition-all active:scale-80"
+            >
+              <ChevronRight size={22} />
+            </button>
 
-              <div className="text-center group px-4 py-1">
-                <p className="text-xs font-black text-foreground">
-                  {format(viewDate, "MMMM yyyy", { locale: arDZ })}
-                </p>
+            <div className="text-center group px-4 py-1">
+              <p className="text-xs font-black text-foreground capitalize">
+                {format(viewDate, "MMMM yyyy", { locale: arDZ })}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setViewDate(addMonths(viewDate, 1));
+                triggerHaptic(5);
+              }}
+              className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 transition-all active:scale-80"
+            >
+              <ChevronLeft size={22} />
+            </button>
+          </div>
+
+          {/* Day Headers */}
+          <div className="grid grid-cols-7 px-4 pt-4">
+            {weekDayLabels.map((d, i) => (
+              <div
+                key={i}
+                className="text-center text-[10px] text-slate-500 font-black uppercase tracking-widest py-1"
+              >
+                {d}
               </div>
+            ))}
+          </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setViewDate(addMonths(viewDate, 1));
-                  triggerHaptic(5);
-                }}
-                className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 transition-all active:scale-80"
-              >
-                <ChevronLeft size={22} />
-              </button>
-            </div>
+          {/* Day Grid */}
+          <div className="grid grid-cols-7 gap-1.5 px-5 pb-5 pt-2">
+            {calendarDays.map((day) => {
+              const inMonth = isSameMonth(day, monthStart);
+              const isToday = isSameDay(day, new Date());
+              const isSelected = isSameDay(day, selectedDate);
 
-            {/* Day Headers */}
-            <div className="grid grid-cols-7 px-4 pt-4">
-              {weekDayLabels.map((d, i) => (
-                <div
-                  key={i}
-                  className="text-center text-[10px] text-slate-500 font-black uppercase tracking-widest py-1"
-                >
-                  {d}
-                </div>
-              ))}
-            </div>
-
-            {/* Day Grid */}
-            <div className="grid grid-cols-7 gap-1.5 px-5 pb-5 pt-2">
-              {calendarDays.map((day) => {
-                const inMonth = isSameMonth(day, monthStart);
-                const isToday = isSameDay(day, new Date());
-                const isSelected = isSameDay(day, selectedDate);
-
-                return (
-                  <motion.button
-                    key={day.toISOString()}
-                    type="button"
-                    whileTap={inMonth ? { scale: 0.9 } : {}}
-                    disabled={!inMonth}
-                    onClick={() => inMonth && handleSelect(day)}
-                    className={`
+              return (
+                <button
+                  key={day.toISOString()}
+                  type="button"
+                  disabled={!inMonth}
+                  onClick={() => inMonth && handleSelect(day)}
+                  className={`
                       aspect-square flex items-center justify-center rounded-xl text-xs font-black
                       transition-all duration-200 relative
                       ${
@@ -190,17 +185,16 @@ export default function DatePickerAr({ selectedDate, onChange }: Props) {
                             : isToday
                               ? "bg-blue-500/10 text-blue-500 ring-1 ring-blue-500/20"
                               : "text-foreground hover:bg-slate-100 dark:hover:bg-white/10"
-                      }
+                      } ${inMonth ? "active:scale-90" : ""}
                     `}
-                  >
-                    {format(day, "d")}
-                  </motion.button>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                >
+                  {format(day, "d")}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

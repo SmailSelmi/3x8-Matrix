@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
 import {
   Battery,
   BatteryCharging,
@@ -85,39 +84,30 @@ export default function EnergyChart({
             </linearGradient>
           </defs>
 
-          <motion.path
+          <path
             d="M 0 50 Q 50 10, 100 50 T 200 50"
             fill="none"
             stroke="url(#waveGradient)"
             strokeWidth="2"
-            className={status.color}
-            animate={{
-              d: [
-                "M 0 50 Q 50 10, 100 50 T 200 50",
-                "M 0 50 Q 50 90, 100 50 T 200 50",
-                "M 0 50 Q 50 10, 100 50 T 200 50",
-              ],
-            }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className={`${status.color} animate-pulse`}
+            style={{ animationDuration: "4s" }}
           />
 
           {/* Current Point Marker */}
-          <motion.circle
+          <circle
             cx="100"
             cy="50"
             r="4"
             className={status.color}
             fill="currentColor"
           />
-          <motion.circle
+          <circle
             cx="100"
             cy="50"
             r="12"
-            className={status.color}
+            className={`${status.color} animate-ping`}
+            style={{ transformOrigin: "100px 50px" }}
             fill="currentColor"
-            initial={{ opacity: 0.3, scale: 1 }}
-            animate={{ opacity: 0, scale: 2 }}
-            transition={{ duration: 1.5, repeat: Infinity }}
           />
         </svg>
 

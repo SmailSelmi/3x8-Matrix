@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
 
 interface DashboardCardProps {
   children: React.ReactNode;
@@ -19,28 +18,15 @@ export default function DashboardCard({
   onClick,
 }: DashboardCardProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{
-        delay,
-        duration: 0.6,
-        type: "spring",
-        stiffness: 100,
-        damping: 20,
-      }}
-      whileHover={
-        interactive ? { scale: 1.02, transition: { duration: 0.2 } } : {}
-      }
-      whileTap={interactive ? { scale: 0.98 } : {}}
+    <div
       onClick={onClick}
-      className={`relative overflow-hidden p-5 glass-card rounded-[2.2rem] border border-slate-200/50 dark:border-white/5 bg-white/40 dark:bg-slate-900/40 backdrop-blur-3xl shadow-xl ${interactive ? "cursor-pointer" : ""} ${className}`}
+      className={`relative overflow-hidden p-5 glass-card rounded-[2.2rem] border border-slate-200/50 dark:border-white/5 bg-white/40 dark:bg-slate-900/40 backdrop-blur-3xl shadow-xl animate-slide-up-modal ${interactive ? "cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-transform duration-200" : ""} ${className}`}
+      style={{ animationDelay: `${delay}s`, animationFillMode: "both" }}
     >
       {/* Subtle Inner Glow */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent" />
 
       {children}
-    </motion.div>
+    </div>
   );
 }

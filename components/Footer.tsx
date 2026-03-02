@@ -1,7 +1,6 @@
 // components/Footer.tsx
 "use client";
 
-import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 
 export default function Footer({ className }: { className?: string }) {
@@ -26,13 +25,10 @@ export default function Footer({ className }: { className?: string }) {
   }, []);
 
   return (
-    <motion.footer
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.5 }}
+    <footer
       dir="ltr"
       className={`
-        glass-card
+        glass-card animate-slide-up-modal
         bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-white/10 
         text-slate-500 dark:text-slate-400 py-2 px-5 rounded-2xl shadow-xl 
         flex items-center justify-center gap-3 text-[10px] md:text-xs font-medium
@@ -40,6 +36,7 @@ export default function Footer({ className }: { className?: string }) {
         z-50
         ${className || ""}
       `}
+      style={{ animationDelay: "0.5s", animationFillMode: "both" }}
     >
       <span className="opacity-80">© 2026 Trois Huit</span>
 
@@ -53,6 +50,6 @@ export default function Footer({ className }: { className?: string }) {
         {time || "--:--:--"}
       </span>
       <span className="opacity-60 text-[9px] uppercase tracking-wider">DZ</span>
-    </motion.footer>
+    </footer>
   );
 }

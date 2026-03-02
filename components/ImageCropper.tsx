@@ -3,7 +3,6 @@
 
 import React, { useState, useCallback } from "react";
 import Cropper, { Point, Area } from "react-easy-crop";
-import { motion } from "framer-motion";
 import { Check, X, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 
 interface ImageCropperProps {

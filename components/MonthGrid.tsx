@@ -2,7 +2,6 @@
 "use client";
 
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   format,
   startOfMonth,
@@ -16,12 +15,14 @@ import {
   subMonths,
 } from "date-fns";
 import { arDZ } from "date-fns/locale";
+import { AppSettings } from "@/hooks/useAppSettings";
 import { SystemType, ShiftType } from "@/lib/shiftPatterns";
 import { getShiftForDate } from "@/hooks/useShiftLogic";
 import { Sun, Moon, Coffee, Plane } from "lucide-react";
 import { getHolidayForDate } from "@/lib/dateUtils";
 
 interface MonthGridProps {
+  settings: AppSettings;
   cycleStartDate: string;
   systemType: SystemType;
   initialCycleDay?: number;
@@ -43,13 +44,7 @@ const SHIFT_ICONS: Record<ShiftType, React.ReactNode> = {
   leave: <Plane size={10} className="text-emerald-400" />,
 };
 
-const SHIFT_LABELS: Record<ShiftType, string> = {
-  day: "صباحي + ليلي",
-  evening: "مسائي",
-  night: "ليلي",
-  rest: "راحة",
-  leave: "إجازة",
-};
+// SHIFT_LABELS is moved inside component to support i18n
 
 const WEEKDAYS = [
   "الأحد",
@@ -62,6 +57,7 @@ const WEEKDAYS = [
 ];
 
 export default function MonthGrid({
+  settings,
   cycleStartDate,
   systemType,
   initialCycleDay = 1,
@@ -78,6 +74,36 @@ export default function MonthGrid({
     startOfMonth(selectedDate),
   );
   const [direction, setDirection] = React.useState(0);
+  const [touchStartX, setTouchStartX] = React.useState<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const swipeDistance = touchStartX - touchEndX;
+
+    if (swipeDistance > 50) {
+      handleNextMonth();
+    } else if (swipeDistance < -50) {
+      handlePrevMonth();
+    }
+    setTouchStartX(null);
+  };
+
+  const shiftLabels: Record<ShiftType, string> = {
+    day: "صباحي",
+    evening: "مسائي",
+    night: "ليلي",
+    rest: "راحة",
+    leave: "إجازة",
+  };
+
+  const weekdays = [0, 1, 2, 3, 4, 5, 6].map((d) =>
+    format(new Date(2024, 0, 7 + d), "EEE", { locale: arDZ }),
+  );
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -105,143 +131,113 @@ export default function MonthGrid({
     onMonthChange?.(next);
   };
 
-  const variants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? 100 : -100,
-      opacity: 0,
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
-    },
-    exit: (direction: number) => ({
-      x: direction > 0 ? -100 : 100,
-      opacity: 0,
-    }),
-  };
-
   return (
     <div className="w-full px-6 py-4 flex flex-col gap-4">
       <div className="flex items-center justify-between mb-2 px-1">
-        <h3 className="text-lg font-black text-slate-100 italic tracking-tighter">
+        <h3 className="text-lg font-black text-slate-100 italic tracking-tighter capitalize">
           {format(currentMonth, "MMMM yyyy", { locale: arDZ })}
         </h3>
       </div>
 
-      <div className="relative overflow-hidden min-h-[300px] touch-none">
-        <AnimatePresence mode="popLayout" custom={direction}>
-          <motion.div
-            key={currentMonth.toISOString()}
-            custom={direction}
-            variants={variants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.2}
-            onDragEnd={(_, info) => {
-              const swipe = info.offset.x;
-              if (swipe < -50) {
-                handlePrevMonth();
-              } else if (swipe > 50) {
-                handleNextMonth();
-              }
-            }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="grid grid-cols-7 gap-1"
-          >
-            {WEEKDAYS.map((day) => (
-              <div
-                key={day}
-                className="text-center text-[10px] font-black text-slate-600 uppercase py-2"
-              >
-                {day}
-              </div>
-            ))}
+      <div
+        className="relative overflow-hidden min-h-[300px] touch-none"
+        dir="ltr"
+      >
+        <div
+          key={currentMonth.toISOString()}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          className="grid grid-cols-7 gap-1 animate-fade-in transition-all duration-300"
+        >
+          {weekdays.map((day, i) => (
+            <div
+              key={i}
+              className="text-center text-[10px] font-black text-slate-600 uppercase py-2"
+            >
+              {day}
+            </div>
+          ))}
 
-            {days.map((date, idx) => {
-              const isCurrentMonth = isSameMonth(date, monthStart);
-              const isSelected = isSameDay(date, selectedDate);
-              const isToday = isSameDay(date, today);
-              const shiftType = getShiftForDate(
-                date,
-                cycleStartDate,
-                systemType,
-                initialCycleDay,
-                workDuration,
-                vacationDuration,
-                addRouteDays,
-                annualLeaveBlocks,
-                workDurationExtension,
-              );
-              const holiday = getHolidayForDate(date);
+          {days.map((date, idx) => {
+            const isCurrentMonth = isSameMonth(date, monthStart);
+            const isSelected = isSameDay(date, selectedDate);
+            const isToday = isSameDay(date, today);
+            const shiftType = getShiftForDate(
+              date,
+              cycleStartDate,
+              systemType,
+              initialCycleDay,
+              workDuration,
+              vacationDuration,
+              addRouteDays,
+              annualLeaveBlocks,
+              workDurationExtension,
+            );
+            const holiday = getHolidayForDate(date);
 
-              return (
-                <motion.button
-                  key={idx}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => onDateSelect(date)}
-                  style={
-                    isSelected
-                      ? {
-                          backgroundColor: "var(--accent-glow)",
-                          borderColor: "var(--accent-border)",
-                        }
-                      : {}
-                  }
-                  className={`
+            return (
+              <button
+                key={idx}
+                onClick={() => onDateSelect(date)}
+                style={
+                  isSelected
+                    ? {
+                        backgroundColor: "var(--accent-glow)",
+                        borderColor: "var(--accent-border)",
+                      }
+                    : {}
+                }
+                className={`
                     aspect-square rounded-xl flex flex-col items-center justify-center gap-1 transition-all
-                    relative border
+                    relative border active:scale-95
                     ${!isCurrentMonth ? "opacity-10 pointer-events-none" : ""}
-                    ${isSelected ? "shadow-lg" : "bg-white/[0.02] border-transparent"}
+                    ${isSelected ? "shadow-lg" : "bg-white/[0.02] border-transparent hover:bg-white/[0.04]"}
                   `}
-                >
-                  <div className="relative flex flex-col items-center">
+              >
+                <div className="relative flex flex-col items-center">
+                  <span
+                    style={isSelected ? { color: "var(--accent-text)" } : {}}
+                    className={`text-sm font-black font-mono ${isSelected ? "" : isToday ? "text-white" : "text-slate-400"}`}
+                  >
+                    {format(date, "d")}
+                  </span>
+                  {holiday && (
                     <span
-                      style={isSelected ? { color: "var(--accent-text)" } : {}}
-                      className={`text-sm font-black font-mono ${isSelected ? "" : isToday ? "text-white" : "text-slate-400"}`}
+                      className="absolute -top-1.5 -right-3 text-[8px]"
+                      title={holiday.name}
                     >
-                      {format(date, "d")}
+                      {holiday.icon}
                     </span>
-                    {holiday && (
-                      <span
-                        className="absolute -top-1.5 -right-3 text-[8px]"
-                        title={holiday.name}
-                      >
-                        {holiday.icon}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-center h-4">
-                    {SHIFT_ICONS[shiftType]}
-                  </div>
-
-                  {isToday && !isSelected && (
-                    <div
-                      className="absolute top-1 right-1 w-1 h-1 rounded-full"
-                      style={{ backgroundColor: "var(--accent)" }}
-                    />
                   )}
-                </motion.button>
-              );
-            })}
-          </motion.div>
-        </AnimatePresence>
+                </div>
+
+                <div className="flex items-center justify-center h-4">
+                  {SHIFT_ICONS[shiftType]}
+                </div>
+
+                {isToday && !isSelected && (
+                  <div
+                    className="absolute top-1 right-1 w-1 h-1 rounded-full"
+                    style={{ backgroundColor: "var(--accent)" }}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 py-3 border-t border-white/5 mt-2">
-        {Object.entries(SHIFT_ICONS).map(([type, icon]) => (
+        {(["day", "evening", "rest", "leave"] as ShiftType[]).map((type) => (
           <div
             key={type}
             className="flex items-center gap-1.5 opacity-80 scale-95"
           >
             <div className="w-4 h-4 flex items-center justify-center">
-              {icon}
+              {SHIFT_ICONS[type]}
             </div>
             <span className="text-[9px] text-slate-400 uppercase font-black tracking-wider">
-              {SHIFT_LABELS[type as ShiftType]}
+              {shiftLabels[type]}
             </span>
           </div>
         ))}

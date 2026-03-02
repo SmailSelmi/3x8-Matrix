@@ -11,7 +11,6 @@ export interface AppSettings {
   workDuration: number; // days in work period
   vacationDuration: number; // days in vacation period
   addRouteDays: boolean; // add 2 days (travel) to vacation
-  language: "ar" | "en";
   notifications: boolean;
   notificationLeadTime: number; // minutes
   hapticFeedback: boolean;
@@ -35,7 +34,6 @@ const DEFAULTS: AppSettings = {
   workDuration: 28,
   vacationDuration: 7,
   addRouteDays: false,
-  language: "ar",
   notifications: true,
   notificationLeadTime: 30,
   hapticFeedback: true,

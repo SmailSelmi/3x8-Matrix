@@ -2,7 +2,6 @@
 "use client";
 
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Compass, X, CheckCircle2 } from "lucide-react";
 import GlassCard from "./GlassCard";
 
@@ -20,12 +19,7 @@ export default function AnnouncementBanner({
   actionLabel = "حسناً، فهمت",
 }: AnnouncementBannerProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -20, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -20, scale: 0.95 }}
-      className="px-6 mb-4"
-    >
+    <div className="px-6 mb-4 animate-slide-down">
       <GlassCard className="p-4 relative overflow-hidden border-emerald-500/20 bg-emerald-500/5 group">
         {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 blur-2xl rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-110" />
@@ -65,6 +59,6 @@ export default function AnnouncementBanner({
           </div>
         </div>
       </GlassCard>
-    </motion.div>
+    </div>
   );
 }

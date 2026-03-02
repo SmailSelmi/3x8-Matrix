@@ -2,7 +2,6 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
 
 interface GlassCardProps {
   children: React.ReactNode;
@@ -36,22 +35,18 @@ export default function GlassCard({
     : {};
 
   return (
-    <motion.div
-      initial={animate ? { opacity: 0, y: 20 } : false}
-      animate={animate ? { opacity: 1, y: 0 } : false}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      whileHover={onClick ? { scale: 1.02 } : undefined}
-      whileTap={onClick ? { scale: 0.98 } : undefined}
+    <div
       onClick={onClick}
       style={glowStyle}
       className={`
-        backdrop-blur-[20px] rounded-2xl border border-solid
+        backdrop-blur-[20px] rounded-2xl border border-solid transition-all duration-300
+        ${animate ? "animate-slide-up-modal" : ""}
         ${variants[variant]}
-        ${onClick ? "cursor-pointer" : ""}
+        ${onClick ? "cursor-pointer hover:scale-[1.02] active:scale-[0.98]" : ""}
         ${className}
       `}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }

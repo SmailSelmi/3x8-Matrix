@@ -2,7 +2,6 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
 import { User, Camera, Trash2 } from "lucide-react";
 import GlassCard from "./GlassCard";
 import ImageCropper from "./ImageCropper";
@@ -31,10 +30,8 @@ export default function PersonalInfoView({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col gap-6 max-w-2xl mx-auto pb-8"
+    <div
+      className="flex flex-col gap-6 max-w-2xl mx-auto pb-8 animate-slide-up-modal"
       dir="rtl"
     >
       {/* Section title */}
@@ -50,7 +47,7 @@ export default function PersonalInfoView({
         <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
 
         <span className="self-start text-[10px] font-black text-slate-500 uppercase tracking-widest">
-          صورة الملف الشخصي
+          الصورة الشخصية
         </span>
 
         <div className="relative group w-28 h-28">
@@ -99,7 +96,7 @@ export default function PersonalInfoView({
           onClick={() => fileInputRef.current?.click()}
           className="px-5 py-2.5 mt-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-black hover:bg-blue-500/20 active:scale-95 transition-all shadow-lg shadow-blue-500/5"
         >
-          {settings.profileImage ? "تغيير الصورة" : "رفع صورة"}
+          {settings.profileImage ? "تغيير الصورة" : "اضافة صورة"}
         </button>
       </GlassCard>
 
@@ -115,14 +112,18 @@ export default function PersonalInfoView({
           />
           <input
             type="text"
-            placeholder="أدخل اسمك..."
+            placeholder="ادخل اسمك"
             value={settings.userName}
+            enterKeyHint="done"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") e.currentTarget.blur();
+            }}
             onChange={(e) => updateSettings({ userName: e.target.value })}
             className="w-full bg-[#0f172a] border border-white/5 rounded-xl pl-4 pr-11 py-3.5 text-sm font-bold text-slate-100 outline-none focus:border-blue-500/50 focus:bg-blue-500/5 focus:shadow-[0_0_15px_rgba(59,130,246,0.1)] transition-all"
           />
         </div>
         <p className="text-[9px] font-bold text-slate-600 mr-1">
-          يظهر اسمك في الترحيب وصفحة التقرير الشخصي
+          كيف تحب ان نناديك؟
         </p>
       </GlassCard>
 
@@ -137,6 +138,6 @@ export default function PersonalInfoView({
           onCancel={() => setImageToCrop(null)}
         />
       )}
-    </motion.div>
+    </div>
   );
 }

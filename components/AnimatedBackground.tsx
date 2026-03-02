@@ -2,7 +2,6 @@
 "use client";
 
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { ShiftType } from "@/lib/shiftPatterns";
 
 interface AnimatedBackgroundProps {
@@ -38,36 +37,21 @@ export default function AnimatedBackground({
         }}
       />
 
-      <AnimatePresence mode="popLayout">
-        <motion.div
-          key={shiftType}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 2, ease: "easeInOut" }}
-          className="absolute inset-0"
-          style={{ background: GRADIENTS[shiftType] }}
-        />
-      </AnimatePresence>
+      <div
+        key={shiftType}
+        className="absolute inset-0 animate-fade-in"
+        style={{ background: GRADIENTS[shiftType], animationDuration: "2s" }}
+      />
 
       {/* Floating Aurora Orb */}
-      <motion.div
-        animate={{
-          x: [-100, 100, -100],
-          y: [-50, 50, -50],
-          opacity: [0.1, 0.2, 0.1],
-        }}
-        transition={{
-          duration: 15,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-        className="absolute w-[80vw] h-[80vw] rounded-full blur-[120px]"
+      <div
+        className="absolute w-[80vw] h-[80vw] rounded-full blur-[120px] animate-pulse"
         style={{
           background:
             "radial-gradient(circle at center, rgba(255,255,255,0.05) 0%, transparent 70%)",
           left: "10%",
           top: "10%",
+          animationDuration: "8s",
         }}
       />
     </div>

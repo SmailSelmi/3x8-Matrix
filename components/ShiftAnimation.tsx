@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
 import { ShiftType } from "@/lib/shiftPatterns";
 
 interface Props {
@@ -16,13 +15,7 @@ const ShiftAnimation: React.FC<Props> = ({ type }) => {
   return (
     <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
       {/* Scene Container */}
-      <motion.div
-        key={type}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className="relative w-64 h-64"
-      >
+      <div key={type} className="relative w-64 h-64 animate-zoom-in">
         {isLeave ? (
           <VacationScene />
         ) : (
@@ -31,7 +24,7 @@ const ShiftAnimation: React.FC<Props> = ({ type }) => {
             isDouble={type === "night"}
           />
         )}
-      </motion.div>
+      </div>
     </div>
   );
 };
@@ -40,7 +33,6 @@ const ShiftAnimation: React.FC<Props> = ({ type }) => {
 const VacationScene = () => {
   return (
     <svg viewBox="0 0 200 200" className="w-full h-full">
-      {/* Sky Gradient Warning - using simple shapes instead */}
       <circle
         cx="100"
         cy="100"
@@ -50,28 +42,20 @@ const VacationScene = () => {
       />
 
       {/* Sun */}
-      <motion.circle
+      <circle
         cx="150"
         cy="50"
         r="15"
         fill="#fbbf24"
-        animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }}
-        transition={{ duration: 3, repeat: Infinity }}
+        className="animate-pulse"
+        style={{ animationDuration: "3s" }}
       />
 
       {/* Ocean */}
-      <motion.path
+      <path
         d="M10,150 Q50,140 100,150 T190,150 V190 H10 Z"
         fill="#3b82f6"
         fillOpacity="0.6"
-        animate={{
-          d: [
-            "M10,150 Q50,140 100,150 T190,150 V190 H10 Z",
-            "M10,145 Q50,155 100,145 T190,145 V190 H10 Z",
-            "M10,150 Q50,140 100,150 T190,150 V190 H10 Z",
-          ],
-        }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
       />
 
       {/* Island */}
@@ -87,11 +71,7 @@ const VacationScene = () => {
       />
 
       {/* Palm Leaves */}
-      <motion.g
-        style={{ originX: "95px", originY: "80px" }}
-        animate={{ rotate: [0, 2, 0, -1, 0] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-      >
+      <g style={{ transformOrigin: "95px 80px" }}>
         <path
           d="M95,80 Q70,60 50,80"
           stroke="#16a34a"
@@ -120,17 +100,15 @@ const VacationScene = () => {
           fill="none"
           strokeLinecap="round"
         />
-      </motion.g>
+      </g>
 
       {/* Birds */}
-      <motion.path
+      <path
         d="M20,60 Q30,50 40,60"
         stroke="black"
         strokeWidth="1"
         fill="none"
         opacity="0.5"
-        animate={{ x: [0, 100, 200], y: [0, -20, 0], opacity: [0, 1, 0] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
       />
     </svg>
   );
@@ -156,10 +134,9 @@ const WorkCycleScene = ({
       />
 
       {/* Rotating Gear (Symbolizing Work) - Outer */}
-      <motion.g
-        style={{ originX: "100px", originY: "100px" }}
-        animate={{ rotate: 360 }}
-        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+      <g
+        className="animate-spin"
+        style={{ transformOrigin: "100px 100px", animationDuration: "20s" }}
       >
         <circle
           cx="100"
@@ -178,36 +155,33 @@ const WorkCycleScene = ({
           strokeLinecap="round"
           opacity="0.5"
         />
-      </motion.g>
+      </g>
 
       {/* Inner Elements based on Shift Type */}
       {isDouble ? (
         // Moon & Sun for Double Shift
-        <motion.g
-          animate={{ rotate: 360 }}
-          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-          style={{ originX: "100px", originY: "100px" }}
+        <g
+          className="animate-spin"
+          style={{ transformOrigin: "100px 100px", animationDuration: "10s" }}
         >
-          <circle cx="100" cy="40" r="12" fill="#ef4444" />{" "}
-          {/* Red Sun/Moon hybrid representing intensity */}
-          <circle cx="100" cy="160" r="12" fill="#3b82f6" /> {/* Blue Moon */}
-        </motion.g>
+          <circle cx="100" cy="40" r="12" fill="#ef4444" />
+          <circle cx="100" cy="160" r="12" fill="#3b82f6" />
+        </g>
       ) : isAfternoon ? (
         // Sun setting/Afternoon
-        <motion.g>
-          <motion.circle
+        <g>
+          <circle
             cx="100"
             cy="100"
             r="30"
             fill="#f97316"
-            animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }}
-            transition={{ duration: 2, repeat: Infinity }}
+            className="animate-pulse"
+            style={{ animationDuration: "2s" }}
           />
           {/* Rays */}
-          <motion.g
-            animate={{ rotate: 360 }}
-            transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-            style={{ originX: "100px", originY: "100px" }}
+          <g
+            className="animate-spin"
+            style={{ transformOrigin: "100px 100px", animationDuration: "12s" }}
           >
             {[...Array(8)].map((_, i) => (
               <line
@@ -222,8 +196,8 @@ const WorkCycleScene = ({
                 transform={`rotate(${i * 45} 100 100)`}
               />
             ))}
-          </motion.g>
-        </motion.g>
+          </g>
+        </g>
       ) : (
         // Rest Day - Sleeping Zzzs
         <g>
@@ -238,28 +212,28 @@ const WorkCycleScene = ({
           >
             Z
           </text>
-          <motion.text
+          <text
             x="120"
             y="90"
             fontSize="20"
             fill="#3b82f6"
             opacity="0.6"
-            animate={{ y: [0, -10], opacity: [0, 1, 0] }}
-            transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+            className="animate-pulse"
+            style={{ animationDelay: "0.5s", animationDuration: "2s" }}
           >
             z
-          </motion.text>
-          <motion.text
+          </text>
+          <text
             x="140"
             y="70"
             fontSize="15"
             fill="#3b82f6"
             opacity="0.4"
-            animate={{ y: [0, -10], opacity: [0, 1, 0] }}
-            transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+            className="animate-pulse"
+            style={{ animationDelay: "1s", animationDuration: "2s" }}
           >
             z
-          </motion.text>
+          </text>
         </g>
       )}
     </svg>
