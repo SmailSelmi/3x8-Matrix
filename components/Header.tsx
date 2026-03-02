@@ -2,10 +2,11 @@
 "use client";
 
 import React from "react";
-import { User, Share2, Settings, ChevronRight } from "lucide-react";
+import { User, Share2, Settings, ChevronRight, Download } from "lucide-react";
 import { getHijriDate } from "@/lib/dateUtils";
 import { NavTab } from "./BottomNav";
 import NotificationMenu from "./NotificationMenu";
+import { useInstallContext } from "@/context/InstallContext";
 
 interface HeaderProps {
   userName: string;
@@ -22,6 +23,9 @@ export default function Header({
   activeTab,
   onNavigate,
 }: HeaderProps) {
+  const { isInstallable, promptInstall, highlightHeaderIcon } =
+    useInstallContext();
+
   const getGreeting = () => {
     const hour = currentTime.getHours();
     if (hour >= 5 && hour < 12) return "صباح الخير";
@@ -39,7 +43,7 @@ export default function Header({
       <div className="flex justify-between items-center">
         {/* User Identity */}
         <div className="flex items-center gap-3">
-          {activeTab !== "HOME" && (
+          {activeTab === "SETTINGS" && (
             <button
               onClick={() => handleNavigate("HOME")}
               className="p-2 -mr-2 rounded-full hover:bg-white/10 text-slate-300 transition-all active:scale-95"
@@ -79,6 +83,20 @@ export default function Header({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Install Button */}
+          {isInstallable && (
+            <button
+              onClick={promptInstall}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                highlightHeaderIcon
+                  ? "bg-blue-600 text-white animate-pulse ring-4 ring-blue-500/50 scale-110 duration-500"
+                  : "bg-white/[0.04] border border-white/[0.08] text-blue-400 hover:bg-blue-600/20 hover:border-blue-500"
+              }`}
+            >
+              <Download size={20} />
+            </button>
+          )}
+
           {/* Share Button */}
           <button
             onClick={() => {
@@ -86,7 +104,7 @@ export default function Header({
                 navigator
                   .share({
                     title: "Trois Huit - جدول المناوبات",
-                    text: "ودّع فوضى جداول العمل، واستقبل تنظيماً أكثر كفاءة واحترافية مع تطبيق Trois Huit — المساعد الذكي لإدارة نظام المناوبات.\n\nماذا يقدّم لك التطبيق؟\n\n✅ حساب دقيق وفوري لجداول المناوبات وفق نظام عملك.\n🌴 إدارة تلقائية لرصيد الإجازات الشهرية والسنوية بكل شفافية.\n📅 أجندة متكاملة تتضمن العطل الوطنية والمناسبات الإسلامية لتخطيط أفضل.\n🔔 تنبيهات وإشعارات فورية لضمان عدم تفويت أي موعد أو مناوبة.\n\nتطبيق خفيف وسهل الاستخدام، لا يتطلب إنشاء حساب، ومتاح مجاناً بالكامل.\n\nابدأ الآن بتنظيم وقتك بكفاءة أعلى، وشاركه مع زملائك ليستفيد الجميع.",
+                    text: "ودّع فوضى جداول العمل، واستقبل تنظيماً أكثر كفاءة واحترافية مع تطبيق Trois Huit — المساعد الذكي لإدارة نظام المناوبات.\n\nماذا يقدّم لك التطبيق؟\n\n✅ حساب دقيق وفوري لجداول المناوبات وفق نظام عملك.\n🌴 إدارة تلقائية لرصيد الإجازات الشهرية والسنوية بكل شفافية.\n📅 تقويم متكامل يتضمن العطل الوطنية والمناسبات الإسلامية لتخطيط أفضل.\n🔔 تنبيهات وإشعارات فورية لضمان عدم تفويت أي موعد أو مناوبة.\n\nتطبيق خفيف وسهل الاستخدام، لا يتطلب إنشاء حساب، ومتاح مجاناً بالكامل.\n\nابدأ الآن بتنظيم وقتك بكفاءة أعلى، وشاركه مع زملائك ليستفيد الجميع.",
                     url: window.location.origin,
                   })
                   .catch(() => {

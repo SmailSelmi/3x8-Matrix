@@ -96,9 +96,16 @@ export function useStats(
       const isWork = ["day", "evening", "night"].includes(shiftType);
 
       if (isWork) {
-        workDays++;
-        if (date < today) {
-          completedShifts++;
+        if (shiftType === "day" && systemType === "3x8_industrial") {
+          workDays += 2;
+          if (date < today) {
+            completedShifts += 2;
+          }
+        } else {
+          workDays++;
+          if (date < today) {
+            completedShifts++;
+          }
         }
       } else if (shiftType === "rest" && date >= today) {
         restDaysRemaining++;
@@ -140,7 +147,7 @@ export function useStats(
         workDurationExtension,
       );
       if (["day", "evening", "night"].includes(type)) {
-        streak++;
+        streak += type === "day" && systemType === "3x8_industrial" ? 2 : 1;
         checkingDate = addDays(checkingDate, -1);
       } else {
         break;
@@ -148,15 +155,15 @@ export function useStats(
       if (streak > 365) break; // Safety break
     }
 
-    const totalWorkDays =
-      distribution.day + distribution.evening + distribution.night;
-    // Each shift is 8 hours regardless of type (standard industrial 3x8 = 8h shifts)
-    const hoursThisMonth = totalWorkDays * 8;
+    // Each shift is 8 hours regardless of type
+    const hoursThisMonth = workDays * 8;
 
+    const totalWorkDaysInMonth =
+      distribution.day + distribution.evening + distribution.night;
     // Percentage of this month's work shifts that have already passed
     const completionPercent =
-      totalWorkDays > 0
-        ? Math.round((completedShifts / totalWorkDays) * 100)
+      totalWorkDaysInMonth > 0
+        ? Math.round((completedShifts / totalWorkDaysInMonth) * 100)
         : 0;
 
     // Annual Vacation Calculation logic

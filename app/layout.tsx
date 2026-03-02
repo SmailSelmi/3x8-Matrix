@@ -4,6 +4,8 @@ import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
+import InstallPromptBanner from "@/components/InstallPromptBanner";
+import { InstallProvider } from "@/context/InstallContext";
 import type { Metadata, Viewport } from "next";
 
 const tajawal = Tajawal({
@@ -87,9 +89,12 @@ export default function RootLayout({
           forcedTheme="dark"
           disableTransitionOnChange
         >
-          <ServiceWorkerRegistration />
-          <ThemeAccentApplier />
-          {children}
+          <InstallProvider>
+            <ServiceWorkerRegistration />
+            <ThemeAccentApplier />
+            {children}
+            <InstallPromptBanner />
+          </InstallProvider>
         </ThemeProvider>
       </body>
     </html>

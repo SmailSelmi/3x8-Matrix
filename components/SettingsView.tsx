@@ -22,6 +22,8 @@ import { AppSettings } from "@/hooks/useAppSettings";
 import { SystemType } from "@/lib/shiftPatterns";
 import { format, addDays, differenceInDays } from "date-fns";
 import BottomSheet from "./BottomSheet";
+import { requestOSNotificationPermission } from "@/lib/notifications";
+import { usePushSubscription } from "@/hooks/usePushSubscription";
 
 interface SettingsViewProps {
   settings: AppSettings;
@@ -36,6 +38,7 @@ export default function SettingsView({
   resetSettings,
   onClose,
 }: SettingsViewProps) {
+  const { subscribe } = usePushSubscription();
   const [showResetConfirm, setShowResetConfirm] = React.useState(false);
   const [showAddLeave, setShowAddLeave] = React.useState(false);
   const [newLeaveStart, setNewLeaveStart] = React.useState<Date>(new Date());
@@ -47,6 +50,32 @@ export default function SettingsView({
   const [tempPool, setTempPool] = React.useState<number>(
     settings.annualLeaveTotal || 30,
   );
+  const [toastMessage, setToastMessage] = React.useState<string | null>(null);
+  const [pendingChange, setPendingChange] = React.useState<{
+    key: keyof AppSettings;
+    value: any;
+    message: string;
+  } | null>(null);
+
+  const [localWork, setLocalWork] = React.useState(settings.workDuration);
+  const [localVacation, setLocalVacation] = React.useState(
+    settings.vacationDuration,
+  );
+
+  React.useEffect(() => {
+    setLocalWork(settings.workDuration);
+  }, [settings.workDuration]);
+
+  React.useEffect(() => {
+    setLocalVacation(settings.vacationDuration);
+  }, [settings.vacationDuration]);
+
+  React.useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => setToastMessage(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMessage]);
 
   const handleReset = () => {
     setShowResetConfirm(true);
@@ -84,6 +113,7 @@ export default function SettingsView({
     updateSettings({
       annualLeaveBlocks: [...(settings.annualLeaveBlocks || []), newBlock],
     });
+    setToastMessage("تم إضافة فترة الإجازة السنوية بنجاح ✈️");
     setShowAddLeave(false);
     setNewLeaveDuration(1);
     setUsageType("custom");
@@ -114,7 +144,11 @@ export default function SettingsView({
               <DatePickerAr
                 selectedDate={new Date(settings.cycleStartDate)}
                 onChange={(date) =>
-                  updateSettings({ cycleStartDate: format(date, "yyyy-MM-dd") })
+                  setPendingChange({
+                    key: "cycleStartDate",
+                    value: format(date, "yyyy-MM-dd"),
+                    message: "هل أنت متأكد من تغيير تاريخ مرجع الدورة (D1)؟",
+                  })
                 }
               />
               <p className="text-xs font-medium text-slate-600 mr-1">
@@ -150,7 +184,11 @@ export default function SettingsView({
                     disabled={sys.disabled}
                     onClick={() =>
                       !sys.disabled &&
-                      updateSettings({ systemType: sys.id as SystemType })
+                      setPendingChange({
+                        key: "systemType",
+                        value: sys.id as SystemType,
+                        message: `هل أنت متأكد من تغيير نظام الدوام إلى ${sys.label}؟`,
+                      })
                     }
                     className={`p-4 rounded-2xl border text-right transition-all flex flex-col gap-1 ${
                       settings.systemType === sys.id
@@ -191,7 +229,13 @@ export default function SettingsView({
               ].map((s) => (
                 <button
                   key={s.id}
-                  onClick={() => updateSettings({ initialCycleDay: s.id })}
+                  onClick={() =>
+                    setPendingChange({
+                      key: "initialCycleDay",
+                      value: s.id,
+                      message: `هل أنت متأكد من تغيير يوم البداية إلى ${s.label}؟`,
+                    })
+                  }
                   className={`py-3 px-2 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all ${
                     settings.initialCycleDay === s.id
                       ? "bg-blue-600/10 border-blue-500 text-blue-400"
@@ -224,18 +268,30 @@ export default function SettingsView({
               </label>
               <input
                 type="number"
-                value={settings.workDuration || ""}
+                value={localWork || ""}
                 enterKeyHint="done"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") e.currentTarget.blur();
                 }}
                 onChange={(e) => {
                   const val = e.target.value;
-                  updateSettings({
-                    workDuration: val === "" ? 0 : parseInt(val),
-                  });
+                  setLocalWork(val === "" ? 0 : parseInt(val));
                 }}
-                className="w-full bg-[#0f172a] border border-white/5 rounded-xl px-4 py-3 text-sm font-bold text-slate-100 outline-none focus:border-blue-500/50 focus:bg-blue-500/5 focus:shadow-[0_0_15px_rgba(59,130,246,0.1)] transition-all text-center"
+                onBlur={() => {
+                  if (localWork !== settings.workDuration) {
+                    if (localWork <= 0) {
+                      setLocalWork(settings.workDuration);
+                      setToastMessage("يجب أن تكون أيام العمل أكثر من 0 ⚠️");
+                      return;
+                    }
+                    setPendingChange({
+                      key: "workDuration",
+                      value: localWork,
+                      message: `هل أنت متأكد من تغيير عدد أيام العمل إلى ${localWork}؟`,
+                    });
+                  }
+                }}
+                className="w-full bg-[#030712] border border-white/5 rounded-xl px-4 py-3 text-sm font-bold text-slate-100 outline-none focus:border-blue-500/50 focus:bg-blue-500/5 focus:shadow-[0_0_15px_rgba(59,130,246,0.1)] transition-all text-center [direction:ltr]"
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -244,26 +300,44 @@ export default function SettingsView({
               </label>
               <input
                 type="number"
-                value={settings.vacationDuration || ""}
+                value={localVacation || ""}
                 enterKeyHint="done"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") e.currentTarget.blur();
                 }}
                 onChange={(e) => {
                   const val = e.target.value;
-                  updateSettings({
-                    vacationDuration: val === "" ? 0 : parseInt(val),
-                  });
+                  setLocalVacation(val === "" ? 0 : parseInt(val));
                 }}
-                className="w-full bg-[#0f172a] border border-white/5 rounded-xl px-4 py-3 text-sm font-bold text-slate-100 outline-none focus:border-blue-500/50 focus:bg-blue-500/5 focus:shadow-[0_0_15px_rgba(59,130,246,0.1)] transition-all text-center"
+                onBlur={() => {
+                  if (localVacation !== settings.vacationDuration) {
+                    if (localVacation <= 0) {
+                      setLocalVacation(settings.vacationDuration);
+                      setToastMessage("يجب أن تكون أيام الإجازة أكثر من 0 ⚠️");
+                      return;
+                    }
+                    setPendingChange({
+                      key: "vacationDuration",
+                      value: localVacation,
+                      message: `هل أنت متأكد من تغيير عدد أيام الإجازة إلى ${localVacation}؟`,
+                    });
+                  }
+                }}
+                className="w-full bg-[#030712] border border-white/5 rounded-xl px-4 py-3 text-sm font-bold text-slate-100 outline-none focus:border-blue-500/50 focus:bg-blue-500/5 focus:shadow-[0_0_15px_rgba(59,130,246,0.1)] transition-all text-center [direction:ltr]"
               />
             </div>
           </div>
 
           <div
-            onClick={() =>
-              updateSettings({ addRouteDays: !settings.addRouteDays })
-            }
+            onClick={() => {
+              const newValue = !settings.addRouteDays;
+              updateSettings({ addRouteDays: newValue });
+              setToastMessage(
+                newValue
+                  ? "تم تفعيل أيام الطريق (+2 يوم) 🛣️"
+                  : "تم إلغاء تفعيل أيام الطريق",
+              );
+            }}
             className={`flex justify-between items-center bg-white/[0.02] border border-white/[0.05] rounded-2xl p-4 cursor-pointer hover:bg-white/[0.04] transition-all group active:scale-[0.98]`}
           >
             <div className="flex flex-col">
@@ -279,9 +353,6 @@ export default function SettingsView({
             >
               <div
                 className={`w-4 h-4 rounded-full shadow-lg z-10 transition-transform duration-300 ${settings.addRouteDays ? "-translate-x-6 bg-purple-500" : "translate-x-0 bg-slate-500"}`}
-              />
-              <div
-                className={`absolute inset-0 rounded-full transition-opacity duration-300 ${settings.addRouteDays ? "opacity-100" : "opacity-0"}`}
               />
             </div>
           </div>
@@ -446,6 +517,9 @@ export default function SettingsView({
                       "data-accent",
                       accent.id,
                     );
+                    setToastMessage(
+                      `تم تغيير لون اللكنة إلى ${accent.label} ✨`,
+                    );
                   }}
                   className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all ${
                     isActive
@@ -491,7 +565,13 @@ export default function SettingsView({
         <GlassCard className="p-6 flex flex-col gap-6">
           <div
             onClick={() =>
-              updateSettings({ notifications: !settings.notifications })
+              setPendingChange({
+                key: "notifications",
+                value: !settings.notifications,
+                message: settings.notifications
+                  ? "هل أنت متأكد من إيقاف الإشعارات العامة؟"
+                  : "هل أنت متأكد من تفعيل الإشعارات العامة؟",
+              })
             }
             className="flex justify-between items-center group cursor-pointer hover:bg-white/[0.02] p-2 rounded-2xl transition-all active:scale-[0.98]"
           >
@@ -546,36 +626,61 @@ export default function SettingsView({
                 </div>
               </div>
 
-              {typeof window !== "undefined" &&
-                Notification.permission !== "granted" && (
-                  <button
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      const granted = await Notification.requestPermission();
-                      if (granted === "granted") {
-                        const registration =
-                          await navigator.serviceWorker.ready;
-                        registration.showNotification(
-                          "تم تفعيل الإشعارات! ✅",
-                          {
-                            body: "ستصلك تنبيهات قبل بداية كل مناوبة.",
-                            icon: "/icons/icon-192.png",
-                          } as any,
-                        );
-                      }
-                    }}
-                    className="w-full py-3 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-medium uppercase tracking-widest hover:bg-orange-500/20 transition-all"
+              <div
+                onClick={async () => {
+                  if (!settings.osNotifications) {
+                    const success = await subscribe();
+                    if (success) {
+                      updateSettings({ osNotifications: true });
+                      setToastMessage("تم تفعيل إشعارات النظام بنجاح ✅");
+                    } else {
+                      updateSettings({ osNotifications: false });
+                      setToastMessage("حدث خطأ أو تم إلغاء التفعيل");
+                    }
+                  } else {
+                    setPendingChange({
+                      key: "osNotifications",
+                      value: false,
+                      message: "هل أنت متأكد من إيقاف إشعارات النظام؟",
+                    });
+                  }
+                }}
+                className="flex justify-between items-center group cursor-pointer hover:bg-white/[0.02] p-2 rounded-2xl transition-all active:scale-[0.98] mt-2 border border-white/5"
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`p-2 rounded-xl transition-all ${settings.osNotifications ? "bg-emerald-500/10 text-emerald-500" : "bg-white/5 text-slate-600"}`}
                   >
-                    منح إذن الإشعارات للمتصفح
-                  </button>
-                )}
+                    <Globe size={18} />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-base font-medium text-slate-200 group-hover:text-white transition-colors">
+                      إشعارات النظام
+                    </span>
+                    <span className="text-xs font-medium text-slate-500">
+                      استقبال الإشعارات خارج التطبيق
+                    </span>
+                  </div>
+                </div>
+                <div
+                  className={`w-12 h-6 rounded-full transition-all relative p-1 flex items-center ${settings.osNotifications ? "bg-emerald-600/20 border border-emerald-500/50" : "bg-white/5 border border-white/10"}`}
+                >
+                  <div
+                    className={`w-4 h-4 rounded-full shadow-lg z-10 transition-transform duration-300 ${settings.osNotifications ? "-translate-x-6 bg-emerald-500" : "translate-x-0 bg-slate-500"}`}
+                  />
+                </div>
+              </div>
             </div>
           )}
 
           <div
-            onClick={() =>
-              updateSettings({ hapticFeedback: !settings.hapticFeedback })
-            }
+            onClick={() => {
+              const newValue = !settings.hapticFeedback;
+              updateSettings({ hapticFeedback: newValue });
+              setToastMessage(
+                newValue ? "تم تفعيل الاهتزاز 📱" : "تم إيقاف الاهتزاز",
+              );
+            }}
             className="flex justify-between items-center group cursor-pointer hover:bg-white/[0.02] p-2 rounded-2xl transition-all active:scale-[0.98]"
           >
             <div className="flex items-center gap-3">
@@ -629,15 +734,55 @@ export default function SettingsView({
         </button>
       </div>
 
-      {/* Save and Close Button */}
-      {onClose && (
-        <div className="mt-4 px-1 pb-4">
-          <button
-            onClick={onClose}
-            className="w-full bg-blue-600 text-white font-black rounded-2xl py-4 px-4 active:scale-95 transition-all shadow-lg shadow-blue-500/20"
-          >
-            حفظ وإغلاق
-          </button>
+      {/* Confirmation Dialogs */}
+      {pendingChange && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300"
+            onClick={() => setPendingChange(null)}
+          />
+          <GlassCard className="w-full max-w-sm p-8 relative z-10 animate-in fade-in zoom-in-95 duration-300 flex flex-col gap-6 text-center shadow-2xl overflow-hidden bg-[#0a1628]/95 border-white/[0.06] !backdrop-blur-md">
+            <div className="flex flex-col gap-2">
+              <h4 className="text-lg font-black text-slate-100 italic">
+                تأكيد التغيير
+              </h4>
+              <p className="text-sm font-bold text-slate-400 leading-relaxed px-2">
+                {pendingChange.message}
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-4 mt-2">
+              <button
+                onClick={() => {
+                  setPendingChange(null);
+                  setLocalWork(settings.workDuration);
+                  setLocalVacation(settings.vacationDuration);
+                }}
+                className="py-4 bg-white/5 hover:bg-white/10 rounded-2xl text-slate-400 font-black transition-all"
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={() => {
+                  updateSettings({ [pendingChange.key]: pendingChange.value });
+                  setPendingChange(null);
+                  setToastMessage("تم حفظ التغيير بنجاح ✅");
+                }}
+                className="py-4 bg-blue-600 hover:bg-blue-500 rounded-2xl text-white font-black transition-all shadow-xl shadow-blue-500/20"
+              >
+                نعم، تأكيد
+              </button>
+            </div>
+          </GlassCard>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 animate-slide-up">
+          <div className="bg-slate-800 text-white px-6 py-3 rounded-full shadow-2xl border border-white/10 text-sm font-medium flex items-center gap-2 whitespace-nowrap">
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+            {toastMessage}
+          </div>
         </div>
       )}
 
@@ -755,7 +900,7 @@ export default function SettingsView({
                 }}
                 max={remainingDays}
                 placeholder="مثلاً: 10"
-                className="w-full bg-white/[0.02] border border-white/[0.05] rounded-xl px-4 py-3 text-sm text-slate-100 outline-none focus:border-blue-500 focus:bg-white/[0.04] transition-all"
+                className="w-full bg-[#030712] border border-white/[0.05] rounded-xl px-4 py-3 text-sm text-slate-100 outline-none focus:border-blue-500 focus:bg-white/[0.04] transition-all [direction:ltr] text-center"
               />
               <p className="text-xs font-medium text-slate-600 mr-1">
                 المتبقي متاح: {remainingDays} يوم
@@ -806,7 +951,7 @@ export default function SettingsView({
               value={tempPool || ""}
               onChange={(e) => setTempPool(parseInt(e.target.value) || 0)}
               placeholder="افتراضي: 30"
-              className="w-full bg-[#0f172a] border border-white/5 rounded-xl px-4 py-3 text-sm font-bold text-slate-100 outline-none focus:border-blue-500/50 focus:bg-blue-500/5 focus:shadow-[0_0_15px_rgba(59,130,246,0.1)] transition-all"
+              className="w-full bg-[#030712] border border-white/5 rounded-xl px-4 py-3 text-sm font-bold text-slate-100 outline-none focus:border-blue-500/50 focus:bg-blue-500/5 focus:shadow-[0_0_15px_rgba(59,130,246,0.1)] transition-all [direction:ltr] text-center"
             />
             <p className="text-xs font-medium text-slate-600 mr-1">
               أدخل إجمالي أيام الإجازة السنوية الممنوحة لك (مثلاً: 30 أو 45)
@@ -823,6 +968,7 @@ export default function SettingsView({
             <button
               onClick={() => {
                 updateSettings({ annualLeaveTotal: tempPool });
+                setToastMessage("تم تحديث الرصيد الإجمالي للإجازات ✅");
                 setShowEditPool(false);
               }}
               className="py-4 px-6 bg-blue-600 hover:bg-blue-500 rounded-2xl text-white font-black transition-all shadow-xl shadow-blue-500/20"

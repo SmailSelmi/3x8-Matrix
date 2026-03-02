@@ -20,7 +20,7 @@ interface BottomNavProps {
 export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   const tabs = [
     { id: "HOME" as NavTab, label: "الرئيسية", icon: <Home size={24} /> },
-    { id: "AGENDA" as NavTab, label: "التقويم", icon: <Calendar size={24} /> },
+    { id: "AGENDA" as NavTab, label: "تقويم", icon: <Calendar size={24} /> },
     { id: "STATS" as NavTab, label: "إحصائيات", icon: <BarChart2 size={24} /> },
     { id: "HEALTH" as NavTab, label: "صحتي", icon: <HeartPulse size={24} /> },
   ];

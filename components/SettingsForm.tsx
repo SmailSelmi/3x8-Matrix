@@ -43,7 +43,7 @@ export default function SettingsForm({
               onChange={(e) =>
                 setFormData({ ...formData, userName: e.target.value })
               }
-              className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-slate-100 outline-none focus:border-blue-500"
+              className="bg-[#030712] border border-white/[0.08] rounded-xl px-4 py-3 text-slate-100 outline-none focus:border-blue-500"
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -58,7 +58,7 @@ export default function SettingsForm({
                   systemType: e.target.value as SystemType,
                 })
               }
-              className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-slate-100 outline-none focus:border-blue-500"
+              className="bg-[#030712] border border-white/[0.08] rounded-xl px-4 py-3 text-slate-100 outline-none focus:border-blue-500"
             >
               <option value="3x8_industrial">نظام (3×8) الصناعي</option>
               <option value="5x2_admin">نظام (5×2) الإداري</option>
@@ -74,7 +74,7 @@ export default function SettingsForm({
               onChange={(e) =>
                 setFormData({ ...formData, cycleStartDate: e.target.value })
               }
-              className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-slate-100 outline-none focus:border-blue-500"
+              className="bg-[#030712] border border-white/[0.08] rounded-xl px-4 py-3 text-slate-100 outline-none focus:border-blue-500 [direction:ltr]"
             />
           </div>
 

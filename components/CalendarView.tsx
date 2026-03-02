@@ -112,7 +112,7 @@ export default function CalendarView({
     <div className="w-full flex flex-col">
       <div className="flex items-center justify-between px-6 pt-2">
         <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
-          أجندة الدوام
+          تقويم الدوام
         </span>
         <div className="flex items-center gap-2">
           {/* Export button — only visible when month grid is expanded */}

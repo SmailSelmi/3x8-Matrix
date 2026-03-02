@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { AppSettings } from "./useAppSettings";
 import { ShiftInfo } from "./useShiftLogic";
 import { parseISO, subMinutes, isBefore, format } from "date-fns";
+import { sendOSNotification } from "@/lib/notifications";
 
 export const useNotifications = (
   settings: AppSettings,
@@ -33,8 +34,7 @@ export const useNotifications = (
   );
 
   const scheduleShiftNotifications = useCallback(() => {
-    if (!settings.notifications || Notification.permission !== "granted")
-      return;
+    if (!settings.notifications) return;
     if (!shiftInfo) return;
 
     const now = new Date();
@@ -66,11 +66,20 @@ export const useNotifications = (
       );
 
       const timeoutId = setTimeout(() => {
-        showNotification(`التحضير لمناوبة الـ ${shiftInfo.label}`, {
-          body: `تبدأ مناوبتك في تمام الساعة ${format(startTime, "HH:mm")}. طاب يومك!`,
-          tag: "shift-reminder",
-          renotify: true,
-        } as any);
+        // Trigger OS notification if enabled
+        if (settings.osNotifications) {
+          sendOSNotification(
+            `التحضير لمناوبة الـ ${shiftInfo.label}`,
+            `تبدأ مناوبتك في تمام الساعة ${format(startTime, "HH:mm")}. طاب يومك!`,
+          );
+        } else {
+          // Fallback to legacy showNotification if they consider it "in-app" or just in case
+          showNotification(`التحضير لمناوبة الـ ${shiftInfo.label}`, {
+            body: `تبدأ مناوبتك في تمام الساعة ${format(startTime, "HH:mm")}. طاب يومك!`,
+            tag: "shift-reminder",
+            renotify: true,
+          } as any);
+        }
         scheduledRef.current.delete(notificationId);
       }, delay);
 

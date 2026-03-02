@@ -31,7 +31,7 @@ const SHIFT_META: Record<
   { label: string; icon: string; color: string; hours: number }
 > = {
   day: { label: "صباح + ليل", icon: "☀️", color: "#f59e0b", hours: 8 },
-  evening: { label: "عمل مسائية", icon: "🌆", color: "#f97316", hours: 8 },
+  evening: { label: "عمل مسائية", icon: "", color: "#f97316", hours: 8 },
   night: { label: "ليلية", icon: "🌙", color: "#818cf8", hours: 8 },
   rest: { label: "راحة", icon: "🛡️", color: "#10b981", hours: 0 },
   leave: { label: "إجازة", icon: "✈️", color: "#64748b", hours: 0 },

@@ -22,6 +22,7 @@ export interface AppSettings {
   annualLeaveTotal: number;
   annualLeaveBlocks: { id: string; start: string; end: string }[];
   workDurationExtension: number; // days added to current cycle
+  osNotifications: boolean;
 }
 
 const STORAGE_KEY = "trois_huit_settings";
@@ -45,6 +46,7 @@ const DEFAULTS: AppSettings = {
   annualLeaveTotal: 30,
   annualLeaveBlocks: [],
   workDurationExtension: 0,
+  osNotifications: false,
 };
 
 export const useAppSettings = () => {

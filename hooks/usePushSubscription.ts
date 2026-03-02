@@ -30,7 +30,7 @@ export interface UsePushSubscriptionReturn {
   isSubscribed: boolean;
   permissionState: PermissionState;
   error: string | null;
-  subscribe: () => Promise<void>;
+  subscribe: () => Promise<boolean>;
 }
 
 export function usePushSubscription(): UsePushSubscriptionReturn {
@@ -64,12 +64,12 @@ export function usePushSubscription(): UsePushSubscriptionReturn {
       const permission = await Notification.requestPermission();
       if (permission === "denied") {
         setPermissionState("denied");
-        return;
+        return false;
       }
       if (permission !== "granted") {
-        // User dismissed without choosing (e.g., pressed Esc)
+        // User dismissed without choosing
         setPermissionState("idle");
-        return;
+        return false;
       }
 
       // 3. Get the active service worker registration (with 10s timeout)
@@ -119,10 +119,12 @@ export function usePushSubscription(): UsePushSubscriptionReturn {
       localStorage.setItem(LOCAL_FLAG, "true");
       setIsSubscribed(true);
       setPermissionState("granted");
+      return true;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "حدث خطأ غير متوقع.";
       setError(message);
       setPermissionState("error");
+      return false;
     }
   }, []);
 

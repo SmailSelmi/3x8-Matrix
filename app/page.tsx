@@ -361,7 +361,9 @@ export default function AppShell() {
         {renderContent()}
       </div>
 
-      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      {activeTab !== "SETTINGS" && (
+        <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      )}
 
       {/* Lifted Global Menus */}
       <BottomSheet
