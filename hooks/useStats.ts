@@ -158,13 +158,9 @@ export function useStats(
     // Each shift is 8 hours regardless of type
     const hoursThisMonth = workDays * 8;
 
-    const totalWorkDaysInMonth =
-      distribution.day + distribution.evening + distribution.night;
     // Percentage of this month's work shifts that have already passed
     const completionPercent =
-      totalWorkDaysInMonth > 0
-        ? Math.round((completedShifts / totalWorkDaysInMonth) * 100)
-        : 0;
+      workDays > 0 ? Math.round((completedShifts / workDays) * 100) : 0;
 
     // Annual Vacation Calculation logic
     const currentYear = today.getFullYear();
