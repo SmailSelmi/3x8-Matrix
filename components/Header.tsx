@@ -2,10 +2,10 @@
 "use client";
 
 import React from "react";
-import { User, Bell, Share2, Settings, ChevronLeft, X } from "lucide-react";
-import { formatArabicDate, getHijriDate } from "@/lib/dateUtils";
+import { User, Share2, Settings } from "lucide-react";
+import { getHijriDate } from "@/lib/dateUtils";
 import { NavTab } from "./BottomNav";
-import { useInAppNotifications } from "@/hooks/useInAppNotifications";
+import NotificationMenu from "./NotificationMenu";
 
 interface HeaderProps {
   userName: string;
@@ -20,10 +20,6 @@ export default function Header({
   currentTime,
   onNavigate,
 }: HeaderProps) {
-  const [showNotifications, setShowNotifications] = React.useState(false);
-  const { notifications, dismissNotification, isLoading } =
-    useInAppNotifications();
-
   const getGreeting = () => {
     const hour = currentTime.getHours();
     if (hour >= 5 && hour < 12) return "صباح الخير";
@@ -45,7 +41,6 @@ export default function Header({
           <div className="relative">
             <button
               onClick={() => {
-                setShowNotifications(false);
                 handleNavigate("PROFILE");
               }}
               className="w-10 h-10 rounded-full border flex items-center justify-center text-blue-400 overflow-hidden transition-all bg-blue-500/20 border-blue-500/30 hover:border-blue-500/60 hover:ring-2 hover:ring-blue-500/20 active:scale-95"
@@ -104,89 +99,7 @@ export default function Header({
           </button>
 
           {/* Notifications */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                setShowNotifications(!showNotifications);
-              }}
-              className={`relative w-10 h-10 rounded-full border flex items-center justify-center transition-all active:scale-95 ${
-                showNotifications
-                  ? "bg-blue-600/20 border-blue-500 text-blue-400"
-                  : "bg-white/[0.04] border-white/[0.08] text-slate-400"
-              }`}
-            >
-              <Bell size={20} />
-              {/* Unread badge */}
-              {notifications.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-blue-500 rounded-full text-[9px] font-black text-white flex items-center justify-center shadow-lg shadow-blue-500/40">
-                  {notifications.length}
-                </span>
-              )}
-            </button>
-
-            {showNotifications && (
-              <>
-                <div
-                  className="fixed inset-0 z-40 bg-black/10 backdrop-blur-sm animate-fade-in"
-                  onClick={() => setShowNotifications(false)}
-                />
-                <div
-                  className="absolute end-0 mt-2 w-72 bg-[#0a1628]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/40 z-50 overflow-hidden animate-fade-in"
-                  dir="rtl"
-                >
-                  {/* accent line */}
-                  <div className="h-px w-full bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
-
-                  <div className="p-3 flex flex-col gap-2">
-                    <span className="text-[9px] font-black text-slate-600 uppercase tracking-[0.25em] px-1">
-                      الإشعارات
-                    </span>
-
-                    {isLoading ? (
-                      <p className="text-[10px] font-bold text-slate-500 text-center py-3">
-                        ...
-                      </p>
-                    ) : notifications.length === 0 ? (
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest text-center py-3 leading-relaxed">
-                        لا توجد إشعارات حالياً
-                      </p>
-                    ) : (
-                      notifications.map((n) => (
-                        <div
-                          key={n.id}
-                          className="flex items-start gap-2 bg-white/[0.03] border border-white/[0.06] rounded-xl px-3 py-2.5"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[11px] font-bold text-slate-200 leading-relaxed break-words">
-                              {n.message}
-                            </p>
-                            <span className="text-[9px] font-bold text-slate-600 mt-0.5 block">
-                              {new Date(n.created_at).toLocaleDateString(
-                                "ar-DZ",
-                                {
-                                  day: "numeric",
-                                  month: "short",
-                                },
-                              )}
-                            </span>
-                          </div>
-                          <button
-                            onClick={() => dismissNotification(n.id)}
-                            className="flex-shrink-0 p-0.5 rounded-lg text-slate-600 hover:text-slate-300 hover:bg-white/10 transition-all mt-0.5"
-                            title="إخفاء"
-                          >
-                            <X size={12} />
-                          </button>
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  <div className="h-px w-full bg-gradient-to-r from-transparent via-white/5 to-transparent" />
-                </div>
-              </>
-            )}
-          </div>
+          <NotificationMenu />
         </div>
       </div>
 
