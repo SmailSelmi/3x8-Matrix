@@ -29,7 +29,7 @@ import PersonalInfoView from "@/components/PersonalInfoView";
 import Onboarding from "@/components/Onboarding";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 
-import HealthView from "@/components/HealthView";
+import LinksView from "@/components/LinksView";
 
 export default function AppShell() {
   const [activeTab, setActiveTab] = useState<NavTab>("HOME");
@@ -112,7 +112,7 @@ export default function AppShell() {
   useSwipeNavigation({
     enabled: true,
     onSwipeLeft: () => {
-      const navTabs: NavTab[] = ["HOME", "AGENDA", "STATS", "HEALTH"];
+      const navTabs: NavTab[] = ["HOME", "AGENDA", "STATS", "LINKS"];
       const currentIndex = navTabs.indexOf(activeTab);
       if (currentIndex === -1) return;
       if (currentIndex > 0) {
@@ -120,7 +120,7 @@ export default function AppShell() {
       }
     },
     onSwipeRight: () => {
-      const navTabs: NavTab[] = ["HOME", "AGENDA", "STATS", "HEALTH"];
+      const navTabs: NavTab[] = ["HOME", "AGENDA", "STATS", "LINKS"];
       const currentIndex = navTabs.indexOf(activeTab);
       if (currentIndex === -1) return;
       if (currentIndex < navTabs.length - 1) {
@@ -314,13 +314,13 @@ export default function AppShell() {
             />
           </div>
         );
-      case "HEALTH":
+      case "LINKS":
         return (
           <div
-            key="health"
+            key="links"
             className="flex-1 px-6 pb-28 pt-2 overflow-y-auto no-scrollbar animate-fade-in"
           >
-            <HealthView />
+            <LinksView />
           </div>
         );
       case "SETTINGS":

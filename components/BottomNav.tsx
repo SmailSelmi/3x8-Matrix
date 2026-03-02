@@ -2,13 +2,13 @@
 "use client";
 
 import React from "react";
-import { Home, Calendar, BarChart2, HeartPulse } from "lucide-react";
+import { Home, Calendar, BarChart2, PlaneTakeoff } from "lucide-react";
 
 export type NavTab =
   | "HOME"
   | "AGENDA"
   | "STATS"
-  | "HEALTH"
+  | "LINKS"
   | "PROFILE"
   | "SETTINGS";
 
@@ -22,7 +22,11 @@ export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
     { id: "HOME" as NavTab, label: "الرئيسية", icon: <Home size={24} /> },
     { id: "AGENDA" as NavTab, label: "تقويم", icon: <Calendar size={24} /> },
     { id: "STATS" as NavTab, label: "إحصائيات", icon: <BarChart2 size={24} /> },
-    { id: "HEALTH" as NavTab, label: "صحتي", icon: <HeartPulse size={24} /> },
+    {
+      id: "LINKS" as NavTab,
+      label: "روابط مفيدة",
+      icon: <PlaneTakeoff size={24} />,
+    },
   ];
 
   return (
