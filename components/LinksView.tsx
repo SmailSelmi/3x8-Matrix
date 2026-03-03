@@ -11,60 +11,82 @@ import {
   Smartphone,
 } from "lucide-react";
 
+interface LinkAction {
+  url: string;
+  cta: string;
+  Icon: React.ElementType;
+  iconColor?: string;
+}
+
 interface LinkItem {
   title: string;
   description: string;
-  url: string;
   Icon: React.ElementType;
   iconColor: string;
-  cta: string;
+  actions: LinkAction[];
 }
 
 const links: LinkItem[] = [
   {
-    title: "تطبيق محطتي Mahatati (Android)",
+    title: "تطبيق محطتي Mahatati",
     description:
       "تطبيق شركة سوقرال للاستعلام عن مواعيد وساعات انطلاق الحافلات واقتناء التذاكر.",
-    url: "https://play.google.com/store/apps/details?id=com.sogral.mobile&hl=fr",
     Icon: Smartphone,
     iconColor: "text-emerald-400",
-    cta: "فتح المتجر",
-  },
-  {
-    title: "تطبيق محطتي Mahatati (iOS)",
-    description:
-      "تطبيق شركة سوقرال للاستعلام عن مواعيد وساعات انطلاق الحافلات واقتناء التذاكر.",
-    url: "https://apps.apple.com/fr/app/mahatati/id6754021775",
-    Icon: Apple,
-    iconColor: "text-slate-100",
-    cta: "فتح المتجر",
+    actions: [
+      {
+        url: "https://play.google.com/store/apps/details?id=com.sogral.mobile&hl=fr",
+        cta: "Android",
+        Icon: Smartphone,
+      },
+      {
+        url: "https://apps.apple.com/fr/app/mahatati/id6754021775",
+        cta: "iOS",
+        Icon: Apple,
+      },
+    ],
   },
   {
     title: "الخطوط الجوية الجزائرية (الموقع الرسمي)",
     description:
       "بوابة حجز الرحلات الداخلية والدولية وإدارة الحجوزات الخاصة بك.",
-    url: "https://airalgerie.dz/ar/",
     Icon: Globe,
     iconColor: "text-blue-400",
-    cta: "زيارة الموقع",
+    actions: [
+      {
+        url: "https://airalgerie.dz/ar/",
+        cta: "زيارة الموقع",
+        Icon: ExternalLink,
+      },
+    ],
   },
   {
     title: "تطبيق الخطوط الجوية الجزائرية (iOS)",
     description:
       "حمل التطبيق الرسمي للوصول السريع لجدول الرحلات وبطاقات الصعود.",
-    url: "https://apps.apple.com/lu/app/air-alg%C3%A9rie/id1458273665?l=fr-FR",
     Icon: Apple,
     iconColor: "text-slate-100",
-    cta: "فتح المتجر",
+    actions: [
+      {
+        url: "https://apps.apple.com/lu/app/air-alg%C3%A9rie/id1458273665?l=fr-FR",
+        cta: "فتح المتجر",
+        Icon: ExternalLink,
+      },
+    ],
   },
   {
     title: "طيران الطاسيلي (الموقع الرسمي)",
     description:
       "الموقع المفضل للكثير من عمال قطاع النفط والصناعة للتنقل الداخلي.",
-    url: "https://fly.tassiliairlines.com/B2C/ar",
     Icon: Plane,
     iconColor: "text-emerald-400",
-    cta: "زيارة الموقع",
+    actions: [
+      {
+        url: "https://fly.tassiliairlines.com/B2C/ar",
+        cta: "زيارة الموقع",
+        Icon: ExternalLink,
+      },
+    ],
   },
 ];
 
@@ -105,15 +127,23 @@ export default function LinksView() {
                     {link.description}
                   </p>
 
-                  <a
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="self-start flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white text-[11px] font-black uppercase tracking-wider transition-all duration-300 active:scale-95"
-                  >
-                    <span>{link.cta}</span>
-                    <ExternalLink size={14} className="scale-x-[-1]" />
-                  </a>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {link.actions.map((action, i) => (
+                      <a
+                        key={i}
+                        href={action.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white text-[11px] font-black uppercase tracking-wider transition-all duration-300 active:scale-95"
+                      >
+                        <action.Icon
+                          size={14}
+                          className={action.iconColor || ""}
+                        />
+                        <span>{action.cta}</span>
+                      </a>
+                    ))}
+                  </div>
                 </div>
               </div>
             </GlassCard>
