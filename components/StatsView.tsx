@@ -621,11 +621,11 @@ export default function StatsView({ settings }: StatsViewProps) {
                 color="#fbbf24"
               />
               <Pill
-                icon={<Moon size={14} />}
-                label="مناوبات ليلية"
-                value={n(stats.distribution.night)}
+                icon={<Coffee size={14} />}
+                label="أيام راحة"
+                value={n(stats.distribution.rest)}
                 sub="هذا الشهر"
-                color="#818cf8"
+                color="#10b981"
               />
               <Pill
                 icon={<Sun size={14} />}

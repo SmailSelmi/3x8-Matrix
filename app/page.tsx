@@ -23,6 +23,7 @@ import {
   Type,
   Save,
   Trash2,
+  Check,
 } from "lucide-react";
 import BottomSheet from "@/components/BottomSheet";
 import ScheduleSnapshot from "@/components/ScheduleSnapshot";
@@ -54,6 +55,8 @@ export default function AppShell() {
   const [showCalibrationMenu, setShowCalibrationMenu] = useState(false);
   const [showExtensionMenu, setShowExtensionMenu] = useState(false);
   const [showEventMenu, setShowEventMenu] = useState(false);
+  const [showExtensionSaved, setShowExtensionSaved] = useState(false);
+  const [showEventSaved, setShowEventSaved] = useState(false);
   const [eventFormData, setEventFormData] = useState({
     title: "",
     time: "10:00",
@@ -613,10 +616,27 @@ export default function AppShell() {
             </div>
           </div>
           <button
-            onClick={() => setShowExtensionMenu(false)}
-            className="py-4 px-6 bg-white/5 hover:bg-white/10 rounded-2xl text-slate-400 font-black transition-all mx-1"
+            disabled={showExtensionSaved}
+            onClick={() => {
+              setShowExtensionSaved(true);
+              setTimeout(() => {
+                setShowExtensionSaved(false);
+                setShowExtensionMenu(false);
+              }, 800);
+            }}
+            className={`w-full mt-2 py-4 px-6 rounded-2xl font-black transition-all flex items-center justify-center gap-2 ${
+              showExtensionSaved
+                ? "bg-emerald-500/20 text-emerald-400"
+                : "bg-blue-600 hover:bg-blue-500 text-white"
+            }`}
           >
-            إغلاق
+            {showExtensionSaved ? (
+              <>
+                <Check size={20} className="animate-bounce" /> تم الحفظ
+              </>
+            ) : (
+              "حفظ والتطبيق"
+            )}
           </button>
         </div>
       </BottomSheet>
@@ -676,21 +696,38 @@ export default function AppShell() {
             <button
               onClick={() => {
                 if (!eventFormData.title.trim()) return;
-                const newEvent = {
-                  id: Math.random().toString(36).substr(2, 9),
-                  date: format(selectedAgendaDate, "yyyy-MM-dd"),
-                  title: eventFormData.title,
-                  time: eventFormData.time,
-                };
-                const existing = settings.calendarEvents || [];
-                updateSettings({ calendarEvents: [...existing, newEvent] });
-                setEventFormData({ title: "", time: "10:00" });
-                setShowEventMenu(false);
+
+                setShowEventSaved(true);
+                setTimeout(() => {
+                  const newEvent = {
+                    id: Math.random().toString(36).substr(2, 9),
+                    date: format(selectedAgendaDate, "yyyy-MM-dd"),
+                    title: eventFormData.title,
+                    time: eventFormData.time,
+                  };
+                  const existing = settings.calendarEvents || [];
+                  updateSettings({ calendarEvents: [...existing, newEvent] });
+                  setEventFormData({ title: "", time: "10:00" });
+                  setShowEventSaved(false);
+                  setShowEventMenu(false);
+                }, 800);
               }}
-              disabled={!eventFormData.title.trim()}
-              className="py-4 bg-blue-500 hover:bg-blue-400 disabled:bg-white/5 disabled:text-slate-500 disabled:border-transparent rounded-2xl text-white font-black transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] disabled:shadow-none flex items-center justify-center gap-2"
+              disabled={showEventSaved || !eventFormData.title.trim()}
+              className={`py-4 rounded-2xl font-black transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] disabled:shadow-none flex items-center justify-center gap-2 ${
+                showEventSaved
+                  ? "bg-emerald-500/20 text-emerald-400"
+                  : "bg-blue-500 hover:bg-blue-400 disabled:bg-white/5 disabled:text-slate-500 disabled:border-transparent text-white"
+              }`}
             >
-              <Save size={16} /> حفظ الحدث
+              {showEventSaved ? (
+                <>
+                  <Check size={16} className="animate-bounce" /> تم الحفظ
+                </>
+              ) : (
+                <>
+                  <Save size={16} /> حفظ الحدث
+                </>
+              )}
             </button>
           </div>
         </div>

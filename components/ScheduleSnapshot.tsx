@@ -15,6 +15,7 @@ import {
 import { arDZ } from "date-fns/locale";
 import { SystemType, ShiftType } from "@/lib/shiftPatterns";
 import { getShiftForDate } from "@/hooks/useShiftLogic";
+import { Sun, Moon, Coffee, Plane, Sunset, Briefcase } from "lucide-react";
 
 interface ScheduleSnapshotProps {
   snapshotRef: React.RefObject<HTMLDivElement | null>;
@@ -75,12 +76,31 @@ export default function ScheduleSnapshot({
   const calEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
   const days = eachDayOfInterval({ start: calStart, end: calEnd });
 
-  const SHIFT_LABEL: Record<ShiftType, string> = {
-    day: "ص",
-    evening: "م",
-    night: "ل",
-    rest: "ر",
-    leave: "إ",
+  const getSnapshotIcons = (
+    sysTyp: string,
+  ): Record<ShiftType, React.ReactNode> => {
+    const is5x2 = sysTyp === "5x2_admin";
+    return {
+      day: is5x2 ? (
+        <Briefcase size={12} color="#3b82f6" />
+      ) : (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "1px",
+          }}
+        >
+          <Sun size={10} color="#fbbf24" />
+          <Moon size={10} color="#60a5fa" />
+        </div>
+      ),
+      evening: <Sunset size={12} color="#fb923c" />,
+      night: <Moon size={12} color="#60a5fa" />,
+      rest: <Coffee size={12} color="#64748b" />,
+      leave: <Plane size={12} color="#4ade80" />,
+    };
   };
 
   const SHIFT_FULL: Record<ShiftType, string> = {
@@ -282,14 +302,13 @@ export default function ScheduleSnapshot({
               {inMonth && (
                 <div
                   style={{
-                    fontSize: "7px",
-                    fontWeight: 800,
-                    color: SHIFT_TEXT[shift],
-                    marginTop: "2px",
-                    opacity: 0.9,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginTop: "3px",
                   }}
                 >
-                  {SHIFT_LABEL[shift]}
+                  {getSnapshotIcons(systemType)[shift]}
                 </div>
               )}
               {inMonth && dayEvents.length > 0 && (
@@ -373,6 +392,82 @@ export default function ScheduleSnapshot({
           ))}
         </div>
       </div>
+
+      {/* ── Monthly Events List ─────────────────────────────────────────── */}
+      {calendarEvents.filter((ev) =>
+        ev.date.startsWith(format(month, "yyyy-MM")),
+      ).length > 0 && (
+        <div
+          style={{
+            padding: "0 16px 16px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "6px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "10px",
+              fontWeight: 800,
+              color: "#94a3b8",
+              marginBottom: "4px",
+            }}
+          >
+            أحداث الشهر المجدولة
+          </div>
+          {calendarEvents
+            .filter((ev) => ev.date.startsWith(format(month, "yyyy-MM")))
+            .sort((a, b) => a.date.localeCompare(b.date))
+            .map((ev) => {
+              const evDay = parseInt(ev.date.split("-")[2], 10);
+              return (
+                <div
+                  key={ev.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    background: "rgba(255,255,255,0.05)",
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    border: "1px solid rgba(255,255,255,0.05)",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: 900,
+                      color: "#fbbf24",
+                      width: "20px",
+                      textAlign: "center",
+                    }}
+                  >
+                    {evDay}
+                  </div>
+                  <div
+                    style={{
+                      flex: 1,
+                      fontSize: "10px",
+                      color: "#f8fafc",
+                      fontWeight: 800,
+                    }}
+                  >
+                    {ev.title}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "9px",
+                      color: "#94a3b8",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {ev.time}
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+      )}
 
       {/* ── Footer ──────────────────────────────────────────────────────── */}
       <div
