@@ -161,7 +161,7 @@ const categories: LinkCategory[] = [
             Icon: Globe,
           },
           {
-            url: "https://play.google.com/store/apps/details?id=dz.cnas.elhanaa",
+            url: "https://play.google.com/store/apps/details?id=dz.cnas.mobile_elhanaa",
             cta: "Android",
             Icon: Smartphone,
           },
@@ -172,6 +172,18 @@ const categories: LinkCategory[] = [
 ];
 
 export default function LinksView() {
+  const getActionClasses = (cta: string) => {
+    switch (cta) {
+      case "Android":
+        return "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 border-emerald-500/10 hover:border-emerald-500/20";
+      case "iOS":
+        return "bg-slate-300/10 hover:bg-slate-300/20 text-slate-200 hover:text-white border-slate-300/10 hover:border-slate-300/20";
+      case "الموقع":
+      default:
+        return "bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 border-blue-500/10 hover:border-blue-500/20";
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6 w-full" dir="rtl">
       <div className="w-full flex flex-col gap-6">
@@ -216,25 +228,37 @@ export default function LinksView() {
                           {item.title}
                         </h3>
 
-                        <div className="flex flex-wrap gap-2 mt-1">
-                          {item.actions.map((action, actionIndex) => (
-                            <a
-                              key={actionIndex}
-                              href={action.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-[10px] font-bold uppercase tracking-wide transition-all duration-300 active:scale-95 border border-white/5 hover:border-white/10"
-                            >
-                              <action.Icon size={14} />
-                              <span>{action.cta}</span>
-                              {action.cta === "الموقع" && (
-                                <ExternalLink
-                                  size={10}
-                                  className="scale-x-[-1] opacity-70 ml-0.5"
-                                />
-                              )}
-                            </a>
-                          ))}
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {item.actions.map((action, actionIndex) => {
+                            const actionClasses = getActionClasses(action.cta);
+                            return (
+                              <a
+                                key={actionIndex}
+                                href={action.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wide transition-all duration-300 active:scale-95 border ${actionClasses}`}
+                              >
+                                <action.Icon size={14} />
+                                <span
+                                  className={
+                                    action.cta === "Android" ||
+                                    action.cta === "iOS"
+                                      ? "font-mono font-black mt-0.5"
+                                      : "uppercase"
+                                  }
+                                >
+                                  {action.cta}
+                                </span>
+                                {action.cta === "الموقع" && (
+                                  <ExternalLink
+                                    size={10}
+                                    className="scale-x-[-1] opacity-70 ml-0.5"
+                                  />
+                                )}
+                              </a>
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
